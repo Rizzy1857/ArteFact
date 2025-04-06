@@ -24,7 +24,7 @@ Check [reports/example_report.md](reports/example_report.md) for what ArteFact c
 
 ## Contributing
 
-We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting pull requests.
+I welcome any contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting pull requests.
 
 ## License
 
