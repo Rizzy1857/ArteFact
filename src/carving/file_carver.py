@@ -69,12 +69,12 @@ def main():
     parser = argparse.ArgumentParser(description="🛠️ ArteFact File Carver")
     parser.add_argument("-i", "--input", required=True, help="Input disk image/raw binary file")
     parser.add_argument("-o", "--output", required=True, help="Output directory to store carved files")
-    parser.add_argument("--types", default="jpg,png,pdf", help="Comma-separated list of file types to carve")
+    parser.add_argument('--types', nargs='+', type=str, help='File types to carve (e.g., jpg png pdf)')
 
     args = parser.parse_args()
     input_file = args.input
     output_dir = args.output
-    types = [t.strip().lower() for t in args.types.split(",")]
+    types = [t.strip().lower() for t in args.types]
 
     if not os.path.exists(input_file):
         print(f"[✘] Input file does not exist: {input_file}")
