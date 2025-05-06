@@ -1,5 +1,6 @@
-<div align="center">
-  <img src="https://user-images.githubusercontent.com/000000/artefact-logo-dark.png" width="400" alt="ArteFact Logo" />
+<p align="center">
+  <img src="assets/logo.png" alt="ArteFact Logo" width="300"/>
+</p>
   <h1>🧠 ARTEFACT</h1>
   <p><i>The Modular Digital Forensics Toolkit</i></p>
   <p><b>Version 0.1.0 - "Cold Open"</b></p>
