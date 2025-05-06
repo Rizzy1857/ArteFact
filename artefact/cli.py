@@ -2,6 +2,7 @@
 import argparse
 from pathlib import Path
 from rich.console import Console
+console = Console(force_terminal=True)  
 from rich.table import Table
 from rich.panel import Panel
 from artefact import __version__
@@ -72,8 +73,8 @@ def main():
     parser = argparse.ArgumentParser(
         prog="artefact",
         description="A minimalist toolkit with dark-mode aesthetics.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="\n[bold]Examples:[/]\n  artefact hash file.txt --algorithm md5\n  artefact hash ./docs --json"
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog="\nExamples:\n  artefact hash file.txt --algorithm md5\n  artefact hash ./docs --json"
     )
     
     # Global flags
