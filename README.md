@@ -9,39 +9,9 @@
   <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square"/>
 </div>
 
----
+# ARTEFACT
+> v0.1.0 "Cold Open" — A skeleton in a three-piece suit.
 
-> “You don't find artefacts. They find you.”  
-> — Unknown Analyst, Black Cell, 2019
-
----
-
-## 🔍 What is ArteFact?
-
-**ArteFact** is a modern, minimalist, and modular **digital forensics toolkit**.  
-From hash extraction to deep dive analysis modules, ArteFact is built for investigators, cybersecurity pros, and curious hackers who demand speed, clarity, and composability.
-
-> This is version **0.1.0**, codenamed **“Cold Open”** — our first public reveal.  
-> It’s sleek. It’s dangerous. It hashes files like a goddamn demon.
-
----
-
-## ✨ Features in v0.1.0
-
-| Feature                        | Status | Description |
-|-------------------------------|--------|-------------|
-| 🔹 Modular CLI System          | ✅     | One interface, many tools. |
-| 🔸 `hasher` Module             | ✅     | Supports MD5, SHA1, SHA256. |
-| 🔹 File & Directory Hashing   | ✅     | Recursively traverse folders. |
-| 🔸 JSON + Rich Terminal Output| ✅     | Look good while getting the job done. |
-| 🔹 Tool Autodiscovery          | ✅     | Easily drop in new modules. |
-| 🔸 Versioning & Metadata       | ✅     | CLI flags: `--version`, `--list-tools`. |
-
----
-
-## 🧪 Quick Start
-
-### 📦 Install Dependencies
-
-```bash
-pip install -r requirements.txt
+```sh
+pip install -e .
+artefact --list-tools

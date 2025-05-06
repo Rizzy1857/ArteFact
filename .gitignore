@@ -1,1 +1,66 @@
-/testfiles/*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build and distribution folders
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test and coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Debug artifacts
+*.log
+*.pot
+*.prof
+
+# Local development configs (if any)
+local_settings.py
+settings.json
+
+# Jupyter notebooks (if used)
+.ipynb_checkpoints
+
+# Output files (if any)
+*.csv
+*.jsonl
+*.tmp
+
+# Custom exclusions (add your own below)
+artefact/__pycache__/
+tests/__pycache__/
