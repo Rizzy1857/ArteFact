@@ -1,5 +1,4 @@
-<p align="center">
-  <img src="assets/logo.png" alt="ArteFact Logo" width="300"/>
+
 </p>
   <h1>🧠 ARTEFACT</h1>
   <p><i>The Modular Digital Forensics Toolkit</i></p>
