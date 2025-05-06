@@ -1,31 +1,47 @@
-# ArteFact 🔍
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/000000/artefact-logo-dark.png" width="400" alt="ArteFact Logo" />
+  <h1>🧠 ARTEFACT</h1>
+  <p><i>The Modular Digital Forensics Toolkit</i></p>
+  <p><b>Version 0.1.0 - "Cold Open"</b></p>
+  <br />
+  <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square"/>
+  <img src="https://img.shields.io/badge/python-3.8+-blue?style=flat-square"/>
+  <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square"/>
+</div>
 
-**ArteFact** is a modular digital forensics toolkit built for investigators, analysts, and cybersecurity enthusiasts. It provides utilities for file carving, memory dump parsing, metadata extraction, network traffic analysis, and hash verification.
+---
 
-## Features
+> “You don't find artefacts. They find you.”  
+> — Unknown Analyst, Black Cell, 2019
 
-- 🧩 File Carving: Recover data from raw storage dumps.
-- 🧠 Memory Analysis: Parse volatile memory dumps for forensic traces.
-- 🧾 Metadata Extraction: Extract and analyze metadata from documents and media.
-- 📡 Network Analysis: Inspect and dissect captured network traffic.
-- 🔐 Hash Tools: Generate and verify cryptographic hashes.
+---
 
-## Installation
+## 🔍 What is ArteFact?
 
-Refer to [docs/installation.md](docs/installation.md) for setup instructions.
+**ArteFact** is a modern, minimalist, and modular **digital forensics toolkit**.  
+From hash extraction to deep dive analysis modules, ArteFact is built for investigators, cybersecurity pros, and curious hackers who demand speed, clarity, and composability.
 
-## Usage
+> This is version **0.1.0**, codenamed **“Cold Open”** — our first public reveal.  
+> It’s sleek. It’s dangerous. It hashes files like a goddamn demon.
 
-See [docs/usage.md](docs/usage.md) for real-world examples and module guides.
+---
 
-## Reports
+## ✨ Features in v0.1.0
 
-Check [reports/example_report.md](reports/example_report.md) for what ArteFact can produce.
+| Feature                        | Status | Description |
+|-------------------------------|--------|-------------|
+| 🔹 Modular CLI System          | ✅     | One interface, many tools. |
+| 🔸 `hasher` Module             | ✅     | Supports MD5, SHA1, SHA256. |
+| 🔹 File & Directory Hashing   | ✅     | Recursively traverse folders. |
+| 🔸 JSON + Rich Terminal Output| ✅     | Look good while getting the job done. |
+| 🔹 Tool Autodiscovery          | ✅     | Easily drop in new modules. |
+| 🔸 Versioning & Metadata       | ✅     | CLI flags: `--version`, `--list-tools`. |
 
-## Contributing
+---
 
-I welcome any contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting pull requests.
+## 🧪 Quick Start
 
-## License
+### 📦 Install Dependencies
 
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+```bash
+pip install -r requirements.txt
