@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "artefact"
+version = "1.0.1"
+description = "A minimalist toolkit with dark-mode aesthetics."
+readme = "README.md"
+readme-content-type = "text/markdown"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Rizzy1857", email = "Rizzy1857@gmail.com" }
+]
+keywords = ["CLI", "hashing", "toolkit", "rich"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities"
+]
+dependencies = [
+    "rich>=13.0.0"
+    "argparse"
+]
+requires-python = ">=3.7"
+
+[project.urls]
+Homepage = "https://github.com/Rizzy1857/ArteFact"
+Documentation = "https://github.com/Rizzy1857/ArteFact/wiki"
+Source = "https://github.com/Rizzy1857/ArteFact"
+Tracker = "https://github.com/Rizzy1857/ArteFact/issues"
+
+[project.scripts]
+artefact = "artefact.cli:main"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--strict-markers --disable warnings"
+testpaths = [
+    "tests"
+]
