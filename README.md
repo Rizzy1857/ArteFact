@@ -41,19 +41,19 @@
    ```bash
    git clone https://github.com/Rizzy1857/ArteFact.git
    cd ArteFact
-   ```bash
+   ```
 
 2. Install the dependencies:
 
    ```bash
    pip install -r requirements.txt
-   ```bash
+   ```
 
 3. (Optional) Install the package globally:
 
    ```bash
    pip install .
-   ```bash
+   ```
 
 ---
 
