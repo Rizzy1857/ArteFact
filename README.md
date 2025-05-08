@@ -198,3 +198,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - [Rich Library](https://github.com/Textualize/rich) for the beautiful terminal output.
 - Python community for their amazing tools and libraries.
+
+> **🔒 Note:** For more details on how we handle security, please refer to this [SECURITY.md](SECURITY.md) file.
