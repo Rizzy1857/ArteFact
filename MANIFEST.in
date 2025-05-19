@@ -1,0 +1,10 @@
+include README.md
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
+include pyproject.toml
+include CHANGELOG.md
+include CONTRIBUTING.md
+include SECURITY.md
+recursive-include docs *
+recursive-include assets *

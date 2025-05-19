@@ -11,4 +11,4 @@ def discover_tools() -> Dict[str, object]:
             for name, obj in inspect.getmembers(module):  
                 if inspect.isfunction(obj) and not name.startswith("_"):  
                     tools[name] = obj  
-    return tools  
+    return tools

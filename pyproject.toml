@@ -28,7 +28,7 @@ classifiers = [
     "Topic :: Utilities"
 ]
 dependencies = [
-    "rich>=13.0.0"
+    "rich>=13.0.0",
     "argparse"
 ]
 requires-python = ">=3.7"
@@ -44,7 +44,7 @@ artefact = "artefact.cli:main"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--strict-markers --disable warnings"
+addopts = "--strict-markers --disable-warnings"
 testpaths = [
     "tests"
 ]

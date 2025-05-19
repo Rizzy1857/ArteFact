@@ -1,6 +1,40 @@
 # ARTEFACT Changelog
 
-## [v1.0.1] - 08-05-25
+## [v0.2.0] - 20-05-25
+
+> *"Carve & Reveal"*
+
+### 🚀 Added in v0.2.0
+
+- **File Carving Module:**
+  - Recover JPG, PNG, and PDF files from disk images using signature-based carving.
+  - Efficient chunked reading for large images.
+- **Metadata Extraction Module:**
+  - Extract metadata from images (JPG, PNG) and PDFs using Python libraries.
+  - Deep extraction via exiftool (if installed).
+  - Graceful handling of missing dependencies.
+- **Expanded CLI:**
+  - New subcommands: `carve` and `meta` for file carving and metadata extraction.
+  - Improved help and error messages.
+- **Testing:**
+  - Added pytest-based tests for carving and metadata modules.
+  - Improved test coverage for all core modules.
+
+### 🔧 Changed in v0.2.0
+
+- **Performance:**
+  - Carving now processes disk images in chunks for better memory efficiency.
+- **Dependency Management:**
+  - requirements.txt now lists all required and optional dependencies.
+  - Optional dependencies handled gracefully in code.
+- **Error Handling:**
+  - Improved error messages and user feedback for all modules.
+- **Documentation:**
+  - Updated usage and installation docs for new features.
+
+---
+
+## [v0.1.1] - 08-05-25
 
 > *"Polished and ready for action."*
 

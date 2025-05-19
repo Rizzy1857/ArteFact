@@ -1,6 +1,6 @@
 <h1 align="center">🧠 ARTEFACT</h1>
 <p align="center"><i>The Modular Digital Forensics Toolkit</i></p>
-<p align="center"><b>Version 1.0.1 - "Polished and Ready for Action"</b></p>
+<p align="center"><b>Version 0.2.0 - "Carve & Reveal"</b></p>
 <p align="center">
   <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status"/>
   <img src="https://img.shields.io/badge/python-3.7+-blue?style=flat-square" alt="Python Version"/>
@@ -11,19 +11,21 @@
 
 # ARTEFACT
 >
-> v1.0.1 "Polished and Ready for Action" — A skeleton in a three-piece suit.
+> v0.2.0 "Carve & Reveal" — Carving, Metadata, and More.
 
-**Artefact** is a modular command-line toolkit designed for digital forensics and other utilities. It features a visually appealing interface powered by the `rich` library and supports tools like file and directory hashing.
+**Artefact** is a modular command-line toolkit designed for digital forensics and other utilities. It features a visually appealing interface powered by the `rich` library and supports tools like file and directory hashing, file carving, and metadata extraction.
 
 ---
 
 ## Features
 
-- **File Hashing**: Compute cryptographic hashes (MD5, SHA1, SHA256) for files.
-- **Directory Hashing**: Compute hashes for all files in a directory, with optional JSON output.
-- **Tool Discovery**: Dynamically list available tools in a rich table format.
-- **Dark-Mode Aesthetics**: Styled output using the `rich` library.
-- **Extensible Architecture**: Easily add new tools to the framework.
+- **File Carving:** Recover JPG, PNG, and PDF files from disk images using signature-based carving (efficient chunked reading).
+- **Metadata Extraction:** Extract metadata from images (JPG, PNG) and PDFs using Python libraries, or use exiftool for deep extraction.
+- **File Hashing:** Compute cryptographic hashes (MD5, SHA1, SHA256) for files.
+- **Directory Hashing:** Compute hashes for all files in a directory, with optional JSON output.
+- **Tool Discovery:** Dynamically list available tools in a rich table format.
+- **Dark-Mode Aesthetics:** Styled output using the `rich` library.
+- **Extensible Architecture:** Easily add new tools to the framework.
 
 ---
 
@@ -38,20 +40,20 @@
 
 1. Clone the repository:
 
-   ```bash
+   ```powershell
    git clone https://github.com/Rizzy1857/ArteFact.git
    cd ArteFact
    ```
 
 2. Install the dependencies:
 
-   ```bash
+   ```powershell
    pip install -r requirements.txt
    ```
 
 3. (Optional) Install the package globally:
 
-   ```bash
+   ```powershell
    pip install .
    ```
 
@@ -61,86 +63,98 @@
 
 ### Display the Banner
 
-```bash
+```powershell
 artefact --version
 ```
 
 ### List Available Tools
 
-```bash
+```powershell
 artefact --list-tools
 ```
 
 ### Hash a File
 
-```bash
+```powershell
 artefact hash <file_path> --algorithm <md5|sha1|sha256>
 ```
 
 Example:
 
-```bash
+```powershell
 artefact hash example.txt --algorithm sha256
 ```
 
 ### Hash a Directory
 
-```bash
+```powershell
 artefact hash <directory_path> --algorithm <md5|sha1|sha256> [--json]
 ```
 
 Example:
 
-```bash
+```powershell
 artefact hash ./docs --algorithm md5 --json
+```
+
+### Carve Files from Disk Image
+
+```powershell
+artefact carve -i <image_file> -o <output_dir> [--types jpg png pdf]
+```
+
+Example:
+
+```powershell
+artefact carve -i disk.img -o output --types jpg pdf
+```
+
+### Extract Metadata
+
+```powershell
+artefact meta -f <file> [--deep]
+```
+
+Example:
+
+```powershell
+artefact meta -f sample.jpg
+artefact meta -f document.pdf --deep
 ```
 
 ---
 
 ## Examples
 
-### File Hashing
+### File Carving
 
-```bash
-artefact hash file.txt --algorithm sha256
+```powershell
+artefact carve -i disk.img -o output --types jpg
 ```
 
-Output:
+### Metadata Extraction
 
-```bash
-SHA256: 3a7bd3e2360a3d5d9f6f8c3c3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e
+```powershell
+artefact meta -f sample.jpg
+artefact meta -f sample.pdf --deep
+```
+
+### File Hashing
+
+```powershell
+artefact hash file.txt --algorithm sha256
 ```
 
 ### Directory Hashing (Table Format)
 
-```bash
+```powershell
 artefact hash ./my_folder --algorithm sha1
-```
-
-Output:
-
-```
-+----------------------+------------------------------------------+
-| File                | Hash                                     |
-+----------------------+------------------------------------------+
-| ./my_folder/file1   | 2fd4e1c67a2d28fced849ee1bb76e7391b93eb12 |
-| ./my_folder/file2   | 3a7bd3e2360a3d5d9f6f8c3c3e3e3e3e3e3e3e3e |
-+----------------------+------------------------------------------+
 ```
 
 ### Directory Hashing (JSON Format)
 
-```bash
+```powershell
 artefact hash ./my_folder --algorithm sha256 --json
-```
-
-Output:
-
-```json
-{
-  "./my_folder/file1": "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",
-  "./my_folder/file2": "3a7bd3e2360a3d5d9f6f8c3c3e3e3e3e3e3e3e3e"
-}
 ```
 
 ---
@@ -151,20 +165,20 @@ Output:
 
 1. Activate a virtual environment:
 
-   ```bash
+   ```powershell
    python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   .venv\Scripts\Activate.ps1
    ```
 
 2. Install dependencies:
 
-   ```bash
+   ```powershell
    pip install -r requirements.txt
    ```
 
 3. Run the CLI:
 
-   ```bash
+   ```powershell
    python -m artefact.cli --help
    ```
 
@@ -172,7 +186,7 @@ Output:
 
 Run the test suite using `pytest`:
 
-```bash
+```powershell
 pytest
 ```
 
