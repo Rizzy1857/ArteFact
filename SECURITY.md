@@ -6,8 +6,8 @@ The following versions of ARTEFACT are currently supported with security updates
 
 | Version   | Supported          |
 |-----------|--------------------|
-| 1.0.1     | ✅ Fully supported |
-| < 1.0.1   | ❌ No longer supported |
+| 0.2.0     | ✅ Fully supported |
+| < 0.2.0   | ❌ No longer supported |
 
 ---
 
@@ -41,6 +41,8 @@ To ensure the security of your usage of ARTEFACT:
 - Always use the latest version of the tool.
 - Avoid running the tool with elevated privileges unless necessary.
 - Verify the integrity of downloaded files using the hashing features provided by ARTEFACT.
+- Review the [threat model](docs/threat_model.md) for details on risks and mitigations.
+- Run ArteFact in isolated environments when handling untrusted data.
 
 ---
 

@@ -2,16 +2,18 @@
 <p align="center"><i>The Modular Digital Forensics Toolkit</i></p>
 <p align="center"><b>Version 0.2.0 - "Carve & Reveal"</b></p>
 <p align="center">
-  <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status"/>
-  <img src="https://img.shields.io/badge/python-3.7+-blue?style=flat-square" alt="Python Version"/>
-  <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square" alt="License"/>
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=flat-square)]()
+[![Python Version](https://img.shields.io/badge/python-3.7+-blue?style=flat-square)]()
+[![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)]()
+[![Coverage](https://codecov.io/gh/Rizzy1857/ArteFact/branch/main/graph/badge.svg)]()
+[![Security Audited](https://img.shields.io/badge/security-audited-blueviolet?style=flat-square)]()
 </p>
 
 ---
 
 # ARTEFACT
 >
-> v0.2.0 "Carve & Reveal" — Carving, Metadata, and More.
+> v0.2.0 "Carve & Reveal" — Carving, Metadata, Plugins, and More.
 
 **Artefact** is a modular command-line toolkit designed for digital forensics and other utilities. It features a visually appealing interface powered by the `rich` library and supports tools like file and directory hashing, file carving, and metadata extraction.
 
@@ -212,5 +214,23 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - [Rich Library](https://github.com/Textualize/rich) for the beautiful terminal output.
 - Python community for their amazing tools and libraries.
+
+## Plugins & Extensibility
+
+- ArteFact supports plugins via the `artefact/plugins/` directory and Python entry points.
+- See `artefact/plugins.py` for the dynamic loader.
+- Future releases will support third-party plugin installation.
+
+## Output & UI
+
+- All output and formatting is handled in `artefact/output.py`.
+- Business logic is separated in `artefact/core.py` for testability and reuse.
+
+## CI, Coverage, and Security
+
+- Automated CI runs lint, tests, and coverage on every commit ([see workflow](.github/workflows/ci.yml)).
+- Coverage reports are published to Codecov ([see docs/coverage.md](docs/coverage.md)).
+- All dependencies are pinned and audited with pip-audit.
+- See [docs/threat_model.md](docs/threat_model.md) and [SECURITY.md](SECURITY.md) for security practices and threat model.
 
 > **🔒 Note:** For more details on how we handle security, please refer to this [SECURITY.md](SECURITY.md) file.
