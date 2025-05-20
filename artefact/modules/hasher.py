@@ -2,7 +2,7 @@ import hashlib
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 from rich.console import Console
 from rich.table import Table

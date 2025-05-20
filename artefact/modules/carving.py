@@ -1,8 +1,6 @@
 import argparse
 from pathlib import Path
 from rich.console import Console
-import os
-import re
 
 console = Console()
 
@@ -40,7 +38,6 @@ def carve_files(image_path: Path, output_dir: Path, types=None, chunk_size=1024*
     # Read and process in chunks
     with image_path.open('rb') as f:
         buffer = b''
-        offset = 0
         while True:
             chunk = f.read(chunk_size)
             if not chunk:

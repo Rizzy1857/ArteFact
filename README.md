@@ -29,6 +29,12 @@
 
 ---
 
+## Roadmap
+
+See [Roadmap.md](./Roadmap.md) for upcoming features and planned releases.
+
+---
+
 ## Installation
 
 ### Prerequisites

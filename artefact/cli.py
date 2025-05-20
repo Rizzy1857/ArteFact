@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from artefact import __version__, __codename__
+from artefact import __version__
 from artefact.modules import discover_tools
 from artefact.modules.hasher import hash_file, hash_directory
 
@@ -18,13 +18,14 @@ BANNER = f"""
 [bold magenta]
  █████╗ ██████╗ ████████╗███████╗███████╗ █████╗  ██████╗████████╗
 ██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔════╝██╔══██╗██╔════╝╚══██╔══╝
-███████║██████╔╝   ██║   █████╗  █████╗  ███████║██║        ██║     
-██╔══██║██╔═══╝    ██║   ██╔══╝  ██╔══╝  ██╔══██║██║        ██║     
-██║  ██║██║        ██║   ███████╗██║     ██║  ██║╚██████╗   ██║     
-╚═╝  ╚═╝╚═╝        ╚═╝   ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝   ╚═╝     
+███████║██████╔╝   ██║   █████╗  █████╗  ███████║██║        ██║
+██╔══██║██╔═══╝    ██║   ██╔══╝  ██╔══╝  ██╔══██║██║        ██║
+██║  ██║██║        ██║   ███████╗██║     ██║  ██║╚██████╗   ██║
+╚═╝  ╚═╝╚═╝        ╚═╝   ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝   ╚═╝
 [/bold magenta]
 [dim]v{__version__}[/dim]
 """
+
 
 def print_banner() -> None:
     """Display the ARTEFACT banner."""
@@ -70,9 +71,11 @@ def carving_command(args: argparse.Namespace) -> None:
     from artefact.modules.carving import carve_files
     carve_files(Path(args.input), Path(args.output), args.types)
 
+
 def metadata_command(args: argparse.Namespace) -> None:
     from artefact.modules.metadata import extract_metadata
     extract_metadata(Path(args.file), args.deep)
+
 
 def main() -> None:
     """Main CLI entry point."""
@@ -114,7 +117,7 @@ def main() -> None:
     metadata_parser.set_defaults(func=metadata_command)
     args = parser.parse_args()
     if args.version:
-        console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]{__codename__}[/]")
+        console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]Cold Open[/]")
     elif args.list_tools:
         print_banner()
         list_tools()
