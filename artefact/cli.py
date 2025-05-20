@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from artefact import __version__
+from artefact import __version__, __codename__
 from artefact.modules import discover_tools
 from artefact.modules.hasher import hash_file, hash_directory
 
@@ -114,7 +114,7 @@ def main() -> None:
     metadata_parser.set_defaults(func=metadata_command)
     args = parser.parse_args()
     if args.version:
-        console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]Cold Open[/]")
+        console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]{__codename__}[/]")
     elif args.list_tools:
         print_banner()
         list_tools()

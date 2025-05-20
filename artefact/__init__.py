@@ -1,2 +1,2 @@
-__version__ = "0.1.0alpha"
-__codename__ = "Cold Open"
+__version__ = "0.2.0a"
+__codename__ = "Carve & Reveal"
