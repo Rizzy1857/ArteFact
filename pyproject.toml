@@ -7,7 +7,6 @@ name = "artefact"
 version = "1.0.1"
 description = "A minimalist toolkit with dark-mode aesthetics."
 readme = "README.md"
-readme-content-type = "text/markdown"
 license = { file = "LICENSE" }
 authors = [
     { name = "Rizzy1857", email = "Rizzy1857@gmail.com" }
@@ -48,3 +47,5 @@ addopts = "--strict-markers --disable-warnings"
 testpaths = [
     "tests"
 ]
+[tool.setuptools.packages.find]
+include = ["artefact*"]

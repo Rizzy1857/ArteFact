@@ -7,7 +7,6 @@ from rich.panel import Panel
 from rich.table import Table
 
 from artefact import __version__
-from artefact.modules import discover_tools
 from artefact.modules.hasher import hash_file, hash_directory
 
 console = Console(style="bold cyan", force_terminal=True)
@@ -30,21 +29,6 @@ BANNER = f"""
 def print_banner() -> None:
     """Display the ARTEFACT banner."""
     console.print(BANNER)
-
-
-def list_tools() -> None:
-    """Display available tools in a rich table."""
-    tools = discover_tools()
-    if not tools:
-        console.print("[yellow]No tools available.[/]")
-        return
-    table = Table(title="[bold]Available Tools[/]", show_header=True, header_style="bold magenta")
-    table.add_column("Tool", style="cyan", no_wrap=True)
-    table.add_column("Description", style="green")
-    for name, func in tools.items():
-        docstring = func.__doc__ or "No description available"
-        table.add_row(name, docstring.split('\n')[0])
-    console.print(Panel.fit(table, border_style="dim"))
 
 
 def hash_command(args: argparse.Namespace) -> None:
@@ -77,17 +61,66 @@ def metadata_command(args: argparse.Namespace) -> None:
     extract_metadata(Path(args.file), args.deep)
 
 
+def timeline_command(args: argparse.Namespace) -> None:
+    """Handle the timeline subcommand."""
+    from artefact.modules.timeline import extract_file_timestamps, timeline_to_json, timeline_to_markdown
+    from artefact.modules.timeline import TimelineEvent
+    import glob
+    try:
+        from dateutil.parser import parse as dtparse
+    except ImportError:
+        dtparse = None
+    events = []
+    for file_path in glob.glob(args.path, recursive=True):
+        events.extend(extract_file_timestamps(file_path))
+        from artefact.modules.metadata import extract_metadata
+        meta = extract_metadata(Path(file_path))
+        for ts in meta.get('timestamps', []):
+            try:
+                dt = ts['value']
+                if dtparse:
+                    timestamp = dtparse(dt)
+                else:
+                    from datetime import datetime
+                    timestamp = datetime.fromisoformat(dt)
+            except Exception:
+                continue
+            events.append(TimelineEvent(
+                timestamp=timestamp,
+                event_type=ts.get('label', 'metadata'),
+                source=file_path,
+                details={"source": "metadata"}
+            ))
+    if args.format == 'json':
+        output = timeline_to_json(events)
+    else:
+        output = timeline_to_markdown(events)
+    print(output)
+
+
+def list_tools():
+    table = Table(title="Available Tools in ArteFact v0.2.0", show_lines=True)
+    table.add_column("Tool", style="cyan", no_wrap=True)
+    table.add_column("Description", style="green")
+    table.add_row("hash", "Hash files and directories (MD5, SHA1, SHA256)")
+    table.add_row("carve", "Recover files from disk images (JPG, PNG, PDF)")
+    table.add_row("meta", "Extract metadata from images and PDFs")
+    table.add_row("timeline", "Generate a forensics timeline from file timestamps")
+    console.print(table)
+
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         prog="artefact",
         description="A minimalist toolkit with dark-mode aesthetics.",
         formatter_class=argparse.RawTextHelpFormatter,
-        epilog="\n [bold] Examples [/]:\n  artefact hash file.txt --algorithm md5\n  artefact hash ./docs --json"
+        epilog="\n Examples:\n  artefact hash file.txt --algorithm md5\n  artefact hash ./docs --json"
     )
     parser.add_argument('--version', action='store_true', help='Show version')
     parser.add_argument('--list-tools', action='store_true', help='List available tools')
     subparsers = parser.add_subparsers(dest='command', title='commands')
+    subparsers.required = False  # Allow running with no subcommand
     hash_parser = subparsers.add_parser(
         'hash',
         help='Hash files/directories',
@@ -96,6 +129,7 @@ def main() -> None:
     hash_parser.add_argument('target', help='File or directory to hash')
     hash_parser.add_argument('--algorithm', default='sha256', help='Hash algorithm (md5, sha1, sha256)')
     hash_parser.add_argument('--json', action='store_true', help='Output directory hashes as JSON')
+    hash_parser.set_defaults(func=hash_command)
     # Carving subcommand
     carving_parser = subparsers.add_parser(
         'carve',
@@ -115,17 +149,39 @@ def main() -> None:
     metadata_parser.add_argument('-f', '--file', required=True, help='File to extract metadata from')
     metadata_parser.add_argument('--deep', action='store_true', help='Use exiftool for deeper extraction')
     metadata_parser.set_defaults(func=metadata_command)
+    # Timeline subcommand
+    timeline_parser = subparsers.add_parser(
+        'timeline',
+        help='Generate a forensics timeline from files',
+        description="Create a timeline of file events from timestamps"
+    )
+    timeline_parser.add_argument('path', help='File or glob pattern to scan for timestamps')
+    timeline_parser.add_argument('--format', choices=['json', 'markdown'], default='markdown', help='Export format')
+    timeline_parser.set_defaults(func=timeline_command)
     args = parser.parse_args()
+
+    # Show banner and help if no subcommand is given
+    if not hasattr(args, "func") and not args.version and not args.list_tools:
+        print_banner()
+        parser.print_help()
+        return
+
     if args.version:
+        print_banner()
         console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]Cold Open[/]")
+        return
     elif args.list_tools:
         print_banner()
         list_tools()
+        return
     elif hasattr(args, 'func'):
         args.func(args)
+        return
     else:
         print_banner()
+        console.print("[red]Error:[/] No command provided or unknown command. See usage below.")
         parser.print_help()
+        return
 
 
 if __name__ == "__main__":
