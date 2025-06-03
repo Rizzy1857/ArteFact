@@ -26,30 +26,36 @@ Optional tools for deeper features:
 git clone https://github.com/YOUR_USERNAME/ArteFact.git
 cd ArteFact
 ```
+
 ## Set the Virtual Environment (Recommended)
 
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
+
 ## Install the dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
+
 (if i failed to create a good `requirements.txt`)
 
 ```bash
 pip install scapy tqdm python-magic pillow
 ```
+
 ## VERIFICATION (Important)!!
 
 ```bash
 python src/carving/file_carver.py --help
 ```
+
 If you see a help or usage info message, you are good to go!
 
 ## Optional:
+
 Install additional utilities for extended module features:
 
 `sudo apt install tshark`
