@@ -1,6 +1,6 @@
 <h1 align="center">🧠 ARTEFACT</h1>
 <p align="center"><i>The Modular Digital Forensics Toolkit</i></p>
-<p align="center"><b>Version 0.2.0 - "Carve & Reveal"</b></p>
+<p align="center"><b>Version 0.3.0 - "Timeline Unveiled"</b></p>
 <p align="center">
   <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status"/>
   <img src="https://img.shields.io/badge/python-3.7+-blue?style=flat-square" alt="Python Version"/>
@@ -11,7 +11,7 @@
 
 # ARTEFACT
 >
-> v0.2.0 "Carve & Reveal" — Carving, Metadata, and More.
+> v0.3.0 "Timeline Unveiled" — Timeline, Carving, Metadata, and More.
 
 **Artefact** is a modular command-line toolkit designed for digital forensics and other utilities. It features a visually appealing interface powered by the `rich` library and supports tools like file and directory hashing, file carving, and metadata extraction.
 
@@ -26,6 +26,7 @@
 - **Tool Discovery:** Dynamically list available tools in a rich table format.
 - **Dark-Mode Aesthetics:** Styled output using the `rich` library.
 - **Extensible Architecture:** Easily add new tools to the framework.
+- **Timeline Generation:** Extracts and exports file and metadata timestamps as a forensics timeline (JSON/Markdown).
 
 ---
 
@@ -128,6 +129,22 @@ artefact meta -f sample.jpg
 artefact meta -f document.pdf --deep
 ```
 
+### Generate a Timeline
+
+```powershell
+artefact timeline <file_or_glob_pattern> [--format json|markdown]
+```
+
+Example:
+
+```powershell
+artefact timeline tests\test_timeline.py --format markdown
+```
+
+- Supports single files, directories, and glob patterns.
+- Combines file system and metadata timestamps.
+- Output in Markdown (default) or JSON.
+
 ---
 
 ## Examples
@@ -161,6 +178,12 @@ artefact hash ./my_folder --algorithm sha1
 
 ```powershell
 artefact hash ./my_folder --algorithm sha256 --json
+```
+
+### Timeline Generation
+
+```powershell
+artefact timeline tests\test_timeline.py --format markdown
 ```
 
 ---

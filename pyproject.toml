@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "artefact"
-version = "1.0.1"
+version = "0.3.0"
 description = "A minimalist toolkit with dark-mode aesthetics."
 readme = "README.md"
 license = { file = "LICENSE" }

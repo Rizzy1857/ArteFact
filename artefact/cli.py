@@ -66,12 +66,23 @@ def timeline_command(args: argparse.Namespace) -> None:
     from artefact.modules.timeline import extract_file_timestamps, timeline_to_json, timeline_to_markdown
     from artefact.modules.timeline import TimelineEvent
     import glob
+    from pathlib import Path
     try:
         from dateutil.parser import parse as dtparse
     except ImportError:
         dtparse = None
     events = []
-    for file_path in glob.glob(args.path, recursive=True):
+    # Support both file, directory, and glob patterns
+    paths = list(glob.glob(args.path, recursive=True))
+    if not paths:
+        if Path(args.path).exists():
+            paths = [args.path]
+        else:
+            console.print(f"[red]No files matched:[/] {args.path}")
+            return
+    for file_path in paths:
+        if not Path(file_path).is_file():
+            continue
         events.extend(extract_file_timestamps(file_path))
         from artefact.modules.metadata import extract_metadata
         meta = extract_metadata(Path(file_path))
@@ -79,10 +90,14 @@ def timeline_command(args: argparse.Namespace) -> None:
             try:
                 dt = ts['value']
                 if dtparse:
-                    timestamp = dtparse(dt)
+                    timestamp = dtparse(dt, fuzzy=True)
                 else:
+                    # Try best-effort ISO parse
                     from datetime import datetime
-                    timestamp = datetime.fromisoformat(dt)
+                    try:
+                        timestamp = datetime.fromisoformat(dt)
+                    except Exception:
+                        continue
             except Exception:
                 continue
             events.append(TimelineEvent(
@@ -91,6 +106,9 @@ def timeline_command(args: argparse.Namespace) -> None:
                 source=file_path,
                 details={"source": "metadata"}
             ))
+    if not events:
+        console.print("[yellow]No timeline events found for the given path(s).[/]")
+        return
     if args.format == 'json':
         output = timeline_to_json(events)
     else:

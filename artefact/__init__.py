@@ -1,2 +1,2 @@
-__version__ = "0.2.0a"
-__codename__ = "Carve & Reveal"
+__version__ = "0.3.0"
+__codename__ = "Timeline Unveiled"
