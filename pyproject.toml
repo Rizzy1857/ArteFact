@@ -28,7 +28,8 @@ classifiers = [
 ]
 dependencies = [
     "rich>=13.0.0",
-    "argparse"
+    "argparse",
+    "python-dateutil"
 ]
 requires-python = ">=3.7"
 
