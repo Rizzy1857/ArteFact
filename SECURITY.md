@@ -6,8 +6,8 @@ The following versions of ARTEFACT are currently supported with security updates
 
 | Version   | Supported          |
 |-----------|--------------------|
-| 1.0.1     | ✅ Fully supported |
-| < 1.0.1   | ❌ No longer supported |
+| 0.2.0     | ✅ Fully supported |
+| < 0.2.0   | ❌ No longer supported |
 
 ---
 
