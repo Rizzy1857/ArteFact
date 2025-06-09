@@ -7,6 +7,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from artefact import __version__
+from artefact import __codename__
 from artefact.modules.hasher import hash_file, hash_directory
 
 console = Console(style="bold cyan", force_terminal=True)
@@ -186,7 +187,7 @@ def main() -> None:
 
     if args.version:
         print_banner()
-        console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]Cold Open[/]")
+        console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]{__codename__}[/]")
         return
     elif args.list_tools:
         print_banner()
