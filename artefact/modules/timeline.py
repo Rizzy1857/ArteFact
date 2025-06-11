@@ -45,6 +45,7 @@ def timeline_to_json(events: List[TimelineEvent]) -> str:
     return json.dumps([asdict(e) for e in sorted(events, key=lambda x: x.timestamp)], default=str, indent=2)
 
 def timeline_to_markdown(events: List[TimelineEvent]) -> str:
+    # Fallback to old Markdown table for test compatibility
     lines = ["| Timestamp | Event Type | Source | Details |", "|-----------|------------|--------|---------|"]
     for e in sorted(events, key=lambda x: x.timestamp):
         details = str(e.details) if e.details else ""

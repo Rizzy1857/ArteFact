@@ -128,8 +128,107 @@ def list_tools():
     console.print(table)
 
 
+def interactive_menu():
+    while True:
+        console.print("\n[bold cyan]ARTEFACT Interactive Menu[/]")
+        console.print("[1] File Carving")
+        console.print("[2] Metadata Extraction")
+        console.print("[3] Hashing")
+        console.print("[4] Timeline Generation")
+        console.print("[0] Exit")
+        choice = input("Select an option: ").strip()
+        if choice == "1":
+            img = input("Enter path to disk/image file: ").strip()
+            out = input("Enter output directory: ").strip()
+            types = input("File types to carve (comma separated, blank for all): ").strip()
+            types_list = [t.strip() for t in types.split(",") if t.strip()] if types else None
+            from artefact.modules.carving import carve_files
+            carve_files(Path(img), Path(out), types_list)
+        elif choice == "2":
+            f = input("Enter file path: ").strip()
+            deep = input("Use deep extraction (exiftool)? [y/N]: ").strip().lower() == "y"
+            from artefact.modules.metadata import extract_metadata
+            meta = extract_metadata(Path(f), deep)
+            console.print(meta)
+        elif choice == "3":
+            target = input("Enter file or directory to hash: ").strip()
+            algo = input("Hash algorithm (md5/sha1/sha256): ").strip().lower() or "sha256"
+            from artefact.modules.hasher import hash_file, hash_directory
+            p = Path(target)
+            if p.is_file():
+                result = hash_file(p, algo)
+                console.print(f"[green]{algo.upper()}:[/] {result}")
+            elif p.is_dir():
+                hash_directory(p, algo, "table")
+            else:
+                console.print(f"[red]Invalid path:[/] {target}")
+        elif choice == "4":
+            path = input("Enter file, directory, or glob pattern: ").strip()
+            fmt = input("Format (json/markdown) [markdown]: ").strip().lower() or "markdown"
+            from artefact.modules.timeline import extract_file_timestamps, timeline_to_json, timeline_to_markdown, TimelineEvent
+            import glob
+            try:
+                from dateutil.parser import parse as dtparse
+            except ImportError:
+                dtparse = None
+            events = []
+            paths = list(glob.glob(path, recursive=True))
+            if not paths:
+                from pathlib import Path
+                if Path(path).exists():
+                    paths = [path]
+                else:
+                    console.print(f"[red]No files matched:[/] {path}")
+                    continue
+            for file_path in paths:
+                from pathlib import Path
+                if not Path(file_path).is_file():
+                    continue
+                events.extend(extract_file_timestamps(file_path))
+                from artefact.modules.metadata import extract_metadata
+                meta = extract_metadata(Path(file_path))
+                for ts in meta.get('timestamps', []):
+                    try:
+                        dt = ts['value']
+                        if dtparse:
+                            timestamp = dtparse(dt, fuzzy=True)
+                        else:
+                            from datetime import datetime
+                            try:
+                                timestamp = datetime.fromisoformat(dt)
+                            except Exception:
+                                continue
+                    except Exception:
+                        continue
+                    events.append(TimelineEvent(
+                        timestamp=timestamp,
+                        event_type=ts.get('label', 'metadata'),
+                        source=file_path,
+                        details={"source": "metadata"}
+                    ))
+            if not events:
+                console.print("[yellow]No timeline events found for the given path(s).[/]")
+                continue
+            if fmt == 'json':
+                output = timeline_to_json(events)
+            else:
+                output = timeline_to_markdown(events)
+            print(output)
+        elif choice == "0":
+            console.print("[bold green]Goodbye!")
+            break
+        else:
+            console.print("[red]Invalid option. Please try again.")
+
+
 def main() -> None:
-    """Main CLI entry point."""
+    import sys
+    # If no arguments (just 'artefact'), launch interactive menu
+    if len(sys.argv) == 1:
+        print_banner()
+        interactive_menu()
+        return
+    # Always launch interactive menu if no subcommand or --version/--list-tools is given
     parser = argparse.ArgumentParser(
         prog="artefact",
         description="A minimalist toolkit with dark-mode aesthetics.",
@@ -179,28 +278,22 @@ def main() -> None:
     timeline_parser.set_defaults(func=timeline_command)
     args = parser.parse_args()
 
-    # Show banner and help if no subcommand is given
-    if not hasattr(args, "func") and not args.version and not args.list_tools:
-        print_banner()
-        parser.print_help()
-        return
-
-    if args.version:
-        print_banner()
-        console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]{__codename__}[/]")
-        return
-    elif args.list_tools:
-        print_banner()
-        list_tools()
-        return
-    elif hasattr(args, 'func'):
-        args.func(args)
-        return
-    else:
-        print_banner()
-        console.print("[red]Error:[/] No command provided or unknown command. See usage below.")
-        parser.print_help()
-        return
+    # If any subcommand or flag is given, run as normal
+    if hasattr(args, "func") or args.version or args.list_tools:
+        if args.version:
+            print_banner()
+            console.print(f"[bold]ARTEFACT {__version__}[/] — Codename: [italic]{__codename__}[/]")
+            return
+        elif args.list_tools:
+            print_banner()
+            list_tools()
+            return
+        elif hasattr(args, 'func'):
+            args.func(args)
+            return
+    # Otherwise, always launch interactive menu
+    print_banner()
+    interactive_menu()
 
 
 if __name__ == "__main__":

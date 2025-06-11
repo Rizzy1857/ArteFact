@@ -1,5 +1,33 @@
 # ARTEFACT Changelog
 
+## [v0.3.0] - 2025-06-11
+
+> *"Timeline Unveiled"*
+
+### 🚀 Added in v0.3.0
+
+- **Timeline Generator:**
+  - Extracts and aggregates file system and metadata timestamps from files (including images, PDFs, etc.).
+  - Outputs forensics timeline in Markdown or JSON format.
+  - CLI and interactive menu support for timeline generation.
+- **Interactive Menu:**
+  - New user-friendly interactive menu as the main entry point for all core features (carving, metadata, hashing, timeline).
+  - Launched automatically when running `artefact` with no arguments.
+- **Improved Output:**
+  - Timeline and hash outputs are now more readable and visually appealing.
+- **Documentation:**
+  - README updated with interactive menu instructions, threat model, and code of conduct references.
+  - Usage and installation docs improved for clarity.
+- **Dependency Management:**
+  - Added `python-dateutil` for robust date parsing in timeline feature.
+
+### 🐛 Fixed
+
+- Timeline output formatting and test compatibility.
+- Minor CLI usability and help improvements.
+
+---
+
 ## [v0.2.0] - 20-05-25
 
 > *"Carve & Reveal"*

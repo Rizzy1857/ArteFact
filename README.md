@@ -32,11 +32,13 @@
 
 ## Roadmap
 
-See [Roadmap.md](./Roadmap.md) for upcoming features and planned releases.
+See [Roadmap.md](./docs/Roadmap.md) for upcoming features and planned releases.
 
 ---
 
 ## Installation
+
+check the [installation guide](./docs/installation.md) for more details.
 
 ### Prerequisites
 
@@ -147,6 +149,31 @@ artefact timeline tests\test_timeline.py --format markdown
 
 ---
 
+## Interactive Menu (Recommended)
+
+ArteFact now features an interactive, user-friendly menu for all main forensic actions. This is the easiest way to use ArteFact for most users!
+
+### Start the Interactive Menu
+
+```powershell
+python -m artefact.cli interactive
+```
+
+You will see a menu:
+
+```python
+ARTEFACT Interactive Menu
+[1] File Carving
+[2] Metadata Extraction
+[3] Hashing
+[4] Timeline Generation
+[0] Exit
+```
+
+Just enter the number for the action you want, and ArteFact will guide you step by step.
+
+---
+
 ## Examples
 
 ### File Carving
@@ -242,4 +269,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [Rich Library](https://github.com/Textualize/rich) for the beautiful terminal output.
 - Python community for their amazing tools and libraries.
 
-> **🔒 Note:** For more details on how we handle security, please refer to this [SECURITY.md](SECURITY.md) file.
+> **🔒 Note:** For more details on how we handle security, please refer to this [SECURITY.md](./docs/SECURITY.md) file.
+
+> **🛡️ Threat Model:** See our [Threat Model](./docs/threat_model.md) for how ArteFact handles untrusted data and security risks.
+
+> **🤝 Code of Conduct:** We value a welcoming community. Please read our [Code of Conduct](./docs/CODE_OF_CONDUCT.md) before contributing.
