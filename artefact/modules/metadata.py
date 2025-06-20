@@ -4,21 +4,23 @@ from rich.console import Console
 import subprocess
 import json
 from datetime import datetime
+from artefact.error_handler import handle_error
 
 console = Console()
 
 try:
     from PIL import Image
     from PIL.ExifTags import TAGS
-except ImportError:
+except ImportError as e:
     Image = None
     TAGS = None
+    handle_error(e, context="metadata.py import PIL")
 
 def extract_metadata(file_path: Path, deep=False):
     """Extract metadata from images, PDFs, and other files. Returns a dict with timestamps if found."""
     result = {"timestamps": []}
     if not file_path.exists():
-        console.print(f"[red]Error:[/] File {file_path} does not exist.")
+        handle_error(FileNotFoundError(f"File {file_path} does not exist."), context="extract_metadata")
         return result
     if deep:
         # Use exiftool for deep extraction
@@ -32,12 +34,13 @@ def extract_metadata(file_path: Path, deep=False):
                         key, value = line.split(':', 1)
                         dt = value.strip()
                         result["timestamps"].append({"label": key.strip(), "value": dt})
-                    except Exception:
+                    except Exception as e:
+                        handle_error(e, context="extract_metadata deep exiftool parse")
                         continue
-        except FileNotFoundError:
-            console.print("[red]ExifTool not found. Please install exiftool for deep extraction.")
+        except FileNotFoundError as e:
+            handle_error(e, context="extract_metadata deep exiftool not found")
         except subprocess.CalledProcessError as e:
-            console.print(f"[red]ExifTool error:[/] {e}")
+            handle_error(e, context="extract_metadata deep exiftool error")
         return result
     # Basic extraction for images
     if Image is not None and TAGS is not None and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
@@ -51,22 +54,22 @@ def extract_metadata(file_path: Path, deep=False):
                             try:
                                 dt = str(v)
                                 result["timestamps"].append({"label": k, "value": dt})
-                            except Exception:
+                            except Exception as e:
+                                handle_error(e, context="extract_metadata image parse")
                                 continue
-                # Optionally print
-                # console.print_json(json.dumps(meta, indent=2))
         except Exception as e:
-            console.print(f"[red]Image metadata extraction error:[/] {e}")
+            handle_error(e, context="extract_metadata image error")
         return result
     # Basic extraction for PDFs
     if file_path.suffix.lower() == '.pdf':
         try:
             try:
                 from PyPDF2 import PdfReader
-            except ImportError:
+            except ImportError as e:
                 PdfReader = None
+                handle_error(e, context="extract_metadata pdf import")
             if PdfReader is None:
-                console.print("[yellow]PyPDF2 not installed. Run 'pip install PyPDF2' for PDF metadata.")
+                handle_error(ImportError("PyPDF2 not installed."), context="extract_metadata pdf")
             else:
                 reader = PdfReader(str(file_path))
                 meta = reader.metadata or {}
@@ -75,12 +78,11 @@ def extract_metadata(file_path: Path, deep=False):
                         try:
                             dt = str(v)
                             result["timestamps"].append({"label": k, "value": dt})
-                        except Exception:
+                        except Exception as e:
+                            handle_error(e, context="extract_metadata pdf parse")
                             continue
-                # Optionally print
-                # console.print_json(json.dumps(meta, indent=2))
         except Exception as e:
-            console.print(f"[red]PDF metadata extraction error:[/] {e}")
+            handle_error(e, context="extract_metadata pdf error")
         return result
     # No extractor
     console.print("[yellow]No metadata extractor available for this file type. Try --deep for exiftool.")

@@ -5,6 +5,7 @@ from dataclasses import dataclass, asdict
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import os
+from artefact.error_handler import handle_error
 
 @dataclass
 class TimelineEvent:
@@ -36,8 +37,8 @@ def extract_file_timestamps(file_path: str) -> List[TimelineEvent]:
             event_type="accessed",
             source=file_path
         ))
-    except Exception:
-        pass
+    except Exception as e:
+        handle_error(e, context="extract_file_timestamps")
     return events
 
 def timeline_to_json(events: List[TimelineEvent]) -> str:

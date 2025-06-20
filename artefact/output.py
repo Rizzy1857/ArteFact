@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.table import Table
 import json
 import subprocess
+from artefact.error_handler import handle_error
 
 console = Console(style="bold cyan", force_terminal=True)
 
@@ -54,7 +55,7 @@ def print_metadata_deep(file_path):
         ], capture_output=True, text=True, check=True)
         console.print(f"[bold green]ExifTool Output:[/]")
         console.print(result.stdout)
-    except FileNotFoundError:
-        console.print("[red]ExifTool not found. Please install exiftool for deep extraction.")
+    except FileNotFoundError as e:
+        handle_error(e, context="print_metadata_deep exiftool not found")
     except subprocess.CalledProcessError as e:
-        console.print(f"[red]ExifTool error:[/] {e}")
+        handle_error(e, context="print_metadata_deep exiftool error")
