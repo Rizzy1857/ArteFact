@@ -1,73 +1,149 @@
 # 📘 Usage Guide
 
-This guide walks you through ArteFact’s key modules. Whether you're investigating a compromised system or just exploring cyber forensics, you're in the right place.
+This guide walks you through ArteFact’s key modules and CLI usage.
+For a quick overview, see the [README](../README.md).
 
 ---
 
-## 1️⃣ File Carving
+## File Carving
 
-Recover files from raw storage dumps.
+Recover files from raw storage dumps (e.g., disk images, memory dumps). Supports JPG, PNG, PDF by default.
 
-```bash
-python src/carving/file_carver.py -i test_files/sample.img -o output/
+```powershell
+artefact carve -i <image_file> -o <output_dir> [--types jpg pdf png]
 ```
-### Options:
 
-`-i`: Input disk/image file
+- `-i`: Input disk/image file
+- `-o`: Output directory for carved files
+- `--types`: (optional) File types to look for (default: all supported)
 
-`-o`: Output directory to store carved files
+---
 
-`--types`: (optional) File types to look for (`jpg`, `pdf`, etc.)
+## Disk Image Mounting & Extraction
 
-## 2️⃣ Memory Analysis
+List partitions in a disk image (RAW, DD, E01):
 
-Parse raw memory dumps for strings, process lists, and indicators.
-
-```bash
-python src/memory/mem_parser.py -d test_dumps/dump1.raw
+```powershell
+artefact mount -i disk.img --list
 ```
-### Options (Again):
 
-`-d`: Memory dump file
+Extract files from a partition:
 
-`--strings`: Extract printable strings
-
-`--pslist`: Attempt process list reconstruction
-
-Future update will support integration with Volatility plugins(*hopefully*).
-
-## 3️⃣ Metadata Extraction
-
-Pull metadata from images, documents, and media files.
-
-```bash
-python src/metadata/meta_extractor.py -f sample.jpg
+```powershell
+artefact mount -i disk.img --extract 2 -o output_dir
 ```
-`-f`: File to extract metadata from.
 
-`--deep`: Use `exiftool` for deeper extraction (if installed).
+- `-i`: Input disk image file
+- `--list`: List partitions
+- `--extract`: Partition address to extract
+- `-o`: Output directory for extraction
 
-## 5️⃣ Hash Checker
+---
 
-Generate and compare file hashes.
+## Memory Analysis
 
-```bash
-python src/hash_tools/hash_checker.py -f suspect_file.txt -a sha256
+Parse raw memory dumps for printable strings, IOCs (IPs, URLs, emails), and carve binaries (PE, ELF, Mach-O).
+
+```powershell
+artefact mem -i <memory_dump.raw> [--strings] [--iocs] [--binaries] [--output <dir>] [--min-length N] [--encoding ascii|utf16]
 ```
-### Options:
 
-`-f`: File to hash
+- `-i`: Input memory dump file
+- `--strings`: Extract printable strings
+- `--iocs`: Extract IOCs from strings
+- `--binaries`: Carve out binaries
+- `--output`: Output directory for binaries
+- `--min-length`: Minimum string length (default: 4)
+- `--encoding`: String encoding (ascii or utf16)
 
-`-a`: Hash algorithm (`md5`, `sha1`, `sha256`)
+---
 
-`--compare`: Provide a hash string to compare
+## Live Forensics / Volatile Data Capture
 
-## More Help
+Capture live system artefacts (cross-platform where possible):
 
-Each module supports --help:
+List running processes:
 
-example:
-
-```bash
-python src/carving/file_carver.py --help
+```powershell
+artefact liveops --processes
 ```
+
+List open ports and network connections:
+
+```powershell
+artefact liveops --connections
+```
+
+Dump clipboard contents:
+
+```powershell
+artefact liveops --clipboard
+```
+
+List running services (Windows only):
+
+```powershell
+artefact liveops --services
+```
+
+---
+
+## Metadata Extraction
+
+Extract metadata from images (JPG, PNG), PDFs, and other files. Supports deep extraction with exiftool if installed.
+
+```powershell
+artefact meta -f <file> [--deep]
+```
+
+- `-f`: File to extract metadata from
+- `--deep`: Use exiftool for deeper extraction
+
+---
+
+## Hash Checker
+
+Generate and compare file hashes for files or directories. Supports MD5, SHA1, SHA256.
+
+```powershell
+artefact hash <file_or_dir> --algorithm <md5|sha1|sha256> [--json]
+```
+
+- `--algorithm`: Hash algorithm (default: sha256)
+- `--json`: Output directory hashes as JSON
+
+---
+
+## Timeline Generation
+
+Create a forensics timeline from file and metadata timestamps. Output in Markdown or JSON.
+
+```powershell
+artefact timeline <file_or_glob_pattern> [--format json|markdown]
+```
+
+- `--format`: Output format (default: markdown)
+
+---
+
+## Interactive Menu
+
+Launch the interactive menu for all main features:
+
+```powershell
+python -m artefact.cli
+```
+
+---
+
+## Tips & Troubleshooting
+
+- For E01 image support, install `pyewf` (see requirements-opt.txt).
+- For deep metadata extraction, install exiftool.
+- For memory and liveops features, install `psutil` and (on Windows) `wmi`.
+- Use `--help` with any command for detailed options.
+
+---
+
+For installation, see the [Installation Guide](./installation.md).
+For test coverage, see the [Test Coverage](./coverage.md).

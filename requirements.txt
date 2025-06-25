@@ -1,5 +1,4 @@
 rich>=13.0.0
 argparse
-Pillow
-PyPDF2
 python-dateutil
+pytsk3

@@ -4,6 +4,7 @@ Handles exceptions, logs errors, and provides user-friendly fixes.
 """
 import logging
 from rich.console import Console
+import re
 
 console = Console()
 logger = logging.getLogger("artefact")
@@ -37,6 +38,12 @@ def handle_error(exc, context=None):
     elif isinstance(exc, ValueError):
         console.print(f"[red]Error:[/] {exc}")
         console.print("[yellow]Fix:[/] Verify the input values and formats.")
+    elif isinstance(exc, OSError):
+        console.print(f"[red]OS error:[/] {exc}")
+        console.print("[yellow]Fix:[/] Check file permissions, disk space, or file integrity.")
+    elif isinstance(exc, re.error):
+        console.print(f"[red]Regex error:[/] {exc}")
+        console.print("[yellow]Fix:[/] Check your regular expression syntax.")
     elif hasattr(exc, 'stderr') and exc.stderr:
         console.print(f"[red]Subprocess error:[/] {exc.stderr}")
         console.print("[yellow]Fix:[/] Check the command and its arguments.")

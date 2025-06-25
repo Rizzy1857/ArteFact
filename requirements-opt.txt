@@ -18,3 +18,6 @@ tshark  # install via system package manager (e.g., choco install wireshark)
 # For progress bars and file type detection (future)
 tqdm  # pip install tqdm
 python-magic  # pip install python-magic
+
+# For E01 (Expert Witness) image support
+pyewf  # pip install pyewf

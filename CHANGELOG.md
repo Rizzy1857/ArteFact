@@ -1,5 +1,27 @@
 # ARTEFACT Changelog
 
+## [v0.4.0b] - Unreleased
+
+> *"Centralized Error Handling & Refactor"*
+
+### 🚀 Added
+
+- Centralized error handling module (`artefact/error_handler.py`) for consistent exception management and user-friendly fixes across all core modules.
+- Improved documentation and code comments for maintainability.
+
+### 🔧 Changed
+
+- Refactored `hasher.py`, `metadata.py`, `timeline.py`, and `output.py` to remove local error handling and use the new centralized error handler.
+- Clarified and documented supported file types for file carving (JPG, PNG, PDF).
+- Enhanced output consistency and error messages across modules.
+
+### 🐛 Fixed
+
+- Unified error reporting and suggestions for all user-facing errors.
+- Minor code cleanup and improved testability.
+
+---
+
 ## [v0.3.0] - 2025-06-11
 
 > *"Timeline Unveiled"*

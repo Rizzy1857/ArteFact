@@ -4,17 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "artefact"
-version = "0.3.0"
-description = "A minimalist toolkit with dark-mode aesthetics."
+version = "0.4.0"
+description = "A modular digital forensics toolkit with memory analysis, file carving, hashing, and timeline generation."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
     { name = "Rizzy1857", email = "Rizzy1857@gmail.com" }
 ]
-keywords = ["CLI", "hashing", "toolkit", "rich"]
+keywords = ["CLI", "hashing", "toolkit", "rich", "forensics", "memory analysis", "carving"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.7",
@@ -23,8 +24,10 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
+    "Topic :: Security",
+    "Topic :: Utilities",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Utilities"
+    "Topic :: Security :: Forensics"
 ]
 dependencies = [
     "rich>=13.0.0",
