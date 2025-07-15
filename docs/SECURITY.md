@@ -6,8 +6,8 @@ The following versions of ARTEFACT are currently supported with security updates
 
 | Version   | Supported          |
 |-----------|--------------------|
-| 0.2.0     | ✅ Fully supported |
-| < 0.2.0   | ❌ No longer supported |
+| 0.4.0a    | ✅ Fully supported |
+| < 0.4.0a  | ❌ No longer supported |
 
 ---
 
@@ -49,7 +49,7 @@ To ensure the security of your usage of ARTEFACT:
 We will publish security updates and patches as needed. Users are encouraged to:
 
 - Subscribe to the repository's notifications for release updates.
-- Regularly check the [CHANGELOG.md](CHANGELOG.md) for details on security fixes.
+- Regularly check the [CHANGELOG.md](../CHANGELOG.md) for details on security fixes.
 
 ---
 

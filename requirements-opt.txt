@@ -1,23 +1,23 @@
 # Optional dependencies for ArteFact
 # These are not required for core functionality, but enable extra features.
 
-# For deep metadata extraction
-exiftool  # https://exiftool.org/ (must be installed separately, not a Python package)
+# Deep metadata extraction
+exiftool  # https://exiftool.org/ (system tool, not a Python package)
 
-# For advanced PDF and image handling (already in main requirements, but can be moved here if desired)
-Pillow
-PyPDF2
+# Advanced PDF and image handling (already in main requirements, but can be moved here if desired)
+# Pillow
+# PyPDF2
 
-# For memory analysis (future roadmap)
+# Memory analysis
 volatility3  # pip install volatility3
 
-# For network analysis (future roadmap)
+# Network analysis
 scapy  # pip install scapy
 tshark  # install via system package manager (e.g., choco install wireshark)
 
-# For progress bars and file type detection (future)
-tqdm  # pip install tqdm
+# Progress bars and file type detection
 python-magic  # pip install python-magic
+tqdm  # pip install tqdm
 
-# For E01 (Expert Witness) image support
+# E01 (Expert Witness) image support
 pyewf  # pip install pyewf

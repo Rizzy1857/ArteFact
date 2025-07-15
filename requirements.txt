@@ -1,4 +1,7 @@
+# Core dependencies for ArteFact
 rich>=13.0.0
 argparse
 python-dateutil
 pytsk3
+Pillow
+PyPDF2
