@@ -1,6 +1,8 @@
-<h1 align="center">🧠 ARTEFACT</h1>
-<p align="center"><i>The Modular Digital Forensics Toolkit</i></p>
-<p align="center"><b>Version 0.2.0 - "Carve & Reveal"</b></p>
+
+
+<p align="center"><!-- Version and Codename -->
+  <img src="https://img.shields.io/badge/version-v0.4.0a-red?style=for-the-badge&label=Artefact" /></p>
+  <p align="center"><i>The Modular Digital Forensics Toolkit</i></p>
 <p align="center">
   <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status"/>
   <img src="https://img.shields.io/badge/python-3.7+-blue?style=flat-square" alt="Python Version"/>
@@ -9,7 +11,7 @@
 
 ---
 
-# ARTEFACT
+
 
 A modular command-line toolkit for digital forensics. Fast, extensible, and cross-platform.
 
