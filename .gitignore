@@ -61,7 +61,7 @@ settings.json
 *.jsonl
 *.tmp
 
-# Custom exclusions 
+# Custom exclusions (add your own below)
 artefact/__pycache__/
 tests/__pycache__/
 test/*.txt

@@ -1,4 +1,4 @@
-# Installation Guide
+# Installation Guide (ArteFact v0.4.0a)
 
 Welcome to **ArteFact** — your modular cyber forensics toolkit. Follow the steps below to get ArteFact up and running on your system.
 
@@ -11,43 +11,53 @@ Welcome to **ArteFact** — your modular cyber forensics toolkit. Follow the ste
 - **pip** (Python package manager)
 
 Optional tools for deeper features:
+
 - `tshark` for network traffic dissection (Wireshark CLI)
 - `exiftool` for advanced metadata extraction
-- `volatility` for deep memory dump analysis
+- `volatility3` for deep memory dump analysis
+- `pytsk3` for disk image mounting
 
 ---
 
-## Quick Install
+## Clone the Repository
 
 ```powershell
 git clone https://github.com/YOUR_USERNAME/ArteFact.git
 cd ArteFact
+```
+
+## Set the Virtual Environment (Recommended)
+
+```powershell
 python -m venv venv
-venv\Scripts\activate  # On Windows
+.\venv\Scripts\activate
+```
+
+## Install the dependencies
+
+```powershell
 pip install -r requirements.txt
 ```
 
----
+## Optional: Install extra features
+
+```powershell
+pip install -r requirements-opt.txt
+```
 
 ## Verification
 
 ```powershell
-python -m artefact.cli --help
+artefact --version
+artefact --list-tools
 ```
 
-If you see a help or usage info message, you are good to go!
+If you see the banner and tool list, you are good to go!
 
 ---
 
-## Optional: Install Additional Utilities
+## Troubleshooting
 
-- `pip install volatility3` (for memory analysis)
-- `pip install scapy tqdm python-magic pillow` (for advanced features)
-- `choco install wireshark` (Windows, for tshark)
-- `brew install exiftool` (Mac)
-
----
-
-See the [README](../README.md) for a quick project overview.
-See the [Usage Guide](./usage.md) for detailed CLI examples.
-See the [Test Coverage](./coverage.md) for testing instructions.
+- *Module not found?* → Check if your virtual environment is activated.
+- *Permission issues?* → Try running as administrator, or fix file permissions.
+- *Optional tools not found?* → Install them from requirements-opt.txt or your system package manager.

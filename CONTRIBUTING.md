@@ -24,6 +24,7 @@ First of all, thank you for considering contributing! 🎉
 ## Reporting Issues
 
 If you find a bug or want to suggest a feature:
+
 - Open an [issue](https://github.com/YOUR_USERNAME/ArteFact/issues).
 - Include logs, screenshots, or examples if possible.
 
