@@ -15,7 +15,7 @@ A modular command-line toolkit for digital forensics. Fast, extensible, and cros
 
 ## Quick Start
 
-- **KickStart Guide:** See [here](docs/kickstart.md)
+- KickStart Guide: See [here](docs/kickstart.md)
 - Install: See [here](docs/installation.md)
 - Usage: See [here](docs/usage.md)
 - Features: See [here](docs/Roadmap.md)
