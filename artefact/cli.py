@@ -113,6 +113,41 @@ def list_tools():
     table.add_row("liveops", "Collect live system artifacts (processes, network, etc.)")
     console.print(table)
 
+    # Live tool check
+    console.print("\n[bold]Live Tool Check:[/]")
+    tool_imports = [
+        ("hash", "Artefact.modules.hasher", None),
+        ("carve", "Artefact.modules.carving", ["pytsk3"]),
+        ("meta", "Artefact.modules.metadata", ["PIL", "PyPDF2"]),
+        ("timeline", "Artefact.modules.timeline", None),
+        ("memory", "Artefact.modules.memory", ["volatility3"]),
+        ("mount", "Artefact.modules.mount", ["pytsk3", "pyewf"]),
+        ("liveops", "Artefact.modules.liveops", ["psutil", "wmi"]),
+    ]
+    from rich.spinner import Spinner
+    import time
+    for tool, mod, deps in tool_imports:
+        with console.status(f"Checking {tool}...", spinner="dots"):
+            time.sleep(0.3)  # Simulate a short check for animation effect
+            try:
+                __import__(mod)
+                dep_status = ""
+                if deps:
+                    missing = []
+                    for dep in deps:
+                        try:
+                            __import__(dep)
+                        except ImportError:
+                            missing.append(dep)
+                    if missing:
+                        dep_status = f"[yellow]Missing deps: {', '.join(missing)}[/]"
+                if dep_status:
+                    console.print(f"[yellow]{tool}[/]: [red]Partial[/] {dep_status}")
+                else:
+                    console.print(f"[green]{tool}[/]: OK")
+            except ImportError as e:
+                console.print(f"[red]{tool}[/]: Import failed ({e})")
+
 
 def check_optional_dep(module: str, install_hint: str = ""):
     try:
