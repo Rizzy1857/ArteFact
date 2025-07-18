@@ -3,8 +3,8 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "artefact"
-version = "0.2.0"
+name = "Artefact"
+version = "0.4.0"
 description = "A minimalist toolkit with dark-mode aesthetics."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -39,7 +39,7 @@ Source = "https://github.com/Rizzy1857/ArteFact"
 Tracker = "https://github.com/Rizzy1857/ArteFact/issues"
 
 [project.scripts]
-artefact = "artefact.cli:main"
+Artefact = "Artefact.cli:main"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
