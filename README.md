@@ -1,5 +1,3 @@
-
-
 <p align="center"><!-- Version and Codename -->
   <img src="https://img.shields.io/badge/version-v0.4.0a-red?style=for-the-badge&label=Artefact" /></p>
   <p align="center"><i>The Modular Digital Forensics Toolkit</i></p>
@@ -11,19 +9,20 @@
 
 ---
 
-
+# ARTEFACT
 
 A modular command-line toolkit for digital forensics. Fast, extensible, and cross-platform.
 
 ## Quick Start
 
-- Install: See [INSTALLATION GUIDE](docs/installation.md)
-- Usage: See [DOCUMENTATION GUIDE](docs/usage.md)
-- Features: See [ROADMAP](docs/Roadmap.md)
-- Security: See [SECURITY](docs/SECURITY.md)
-- Threat Model: See [THREAT MODEL](docs/threat_model.md)
-- Coverage: See [COVERAGE](docs/coverage.md)
-- Code of Conduct: See [CODE OF CONDUCT](docs/CODE_OF_CONDUCT.md)
+- **KickStart Guide:** See [docs/kickstart.md](docs/kickstart.md)
+- Install: See [docs/installation.md](docs/installation.md)
+- Usage: See [docs/usage.md](docs/usage.md)
+- Features: See [docs/Roadmap.md](docs/Roadmap.md)
+- Security: See [docs/SECURITY.md](docs/SECURITY.md)
+- Threat Model: See [docs/threat_model.md](docs/threat_model.md)
+- Coverage: See [docs/coverage.md](docs/coverage.md)
+- Code of Conduct: See [docs/CODE_OF_CONDUCT.md](docs/CODE_OF_CONDUCT.md)
 
 ## Main Features
 

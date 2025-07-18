@@ -53,3 +53,13 @@ def handle_error(exc, context=None):
 
     # Optionally, re-raise for debugging
     # raise exc
+
+def cli_error(msg: str, exc: Exception = None, context: str = None):
+    """
+    Unified CLI error handler. Prints, logs, and delegates to handle_error if exception is given.
+    """
+    if exc is not None:
+        handle_error(exc, context)
+    else:
+        console.print(f"[red]Error:[/] {msg}")
+    exit(1)

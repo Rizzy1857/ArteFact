@@ -31,15 +31,18 @@ def print_banner() -> None:
     console.print(BANNER)
 
 
+# --- Unified Error Handler ---
+def cli_error(msg: str):
+    console.print(f"[red]Error:[/] {msg}")
+    exit(1)
+
+
 def hash_command(args: argparse.Namespace) -> None:
-    """Handle the hash subcommand."""
     target = Path(args.target)
     if not target.exists():
-        console.print(f"[red]Error:[/] Path '{args.target}' does not exist.")
-        return
+        cli_error(f"Path '{args.target}' does not exist.")
     if args.algorithm.lower() not in ("md5", "sha1", "sha256"):
-        console.print("[red]Error:[/] Algorithm must be md5, sha1, or sha256.")
-        return
+        cli_error("Algorithm must be md5, sha1, or sha256.")
     try:
         if target.is_file():
             result = hash_file(target, args.algorithm.lower())
@@ -47,8 +50,7 @@ def hash_command(args: argparse.Namespace) -> None:
         elif target.is_dir():
             hash_directory(target, args.algorithm.lower(), "json" if args.json else "table")
     except Exception as e:
-        logger.error(f"Hash command error: {e}")
-        console.print(f"[red]Error:[/] {e}")
+        cli_error(str(e))
 
 
 def carving_command(args: argparse.Namespace) -> None:
@@ -112,6 +114,15 @@ def list_tools():
     console.print(table)
 
 
+def check_optional_dep(module: str, install_hint: str = ""):
+    try:
+        __import__(module)
+        return True
+    except ImportError:
+        console.print(f"[yellow]Optional dependency '{module}' not found. {install_hint}")
+        return False
+
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -122,6 +133,7 @@ def main() -> None:
     )
     parser.add_argument('--version', action='store_true', help='Show version')
     parser.add_argument('--list-tools', action='store_true', help='List available tools')
+    parser.add_argument('--quickstart', action='store_true', help='Show quick start guide')
     subparsers = parser.add_subparsers(dest='command', title='commands')
     subparsers.required = False  # Allow running with no subcommand
     hash_parser = subparsers.add_parser(
@@ -163,6 +175,11 @@ def main() -> None:
     timeline_parser.set_defaults(func=timeline_command)
     args = parser.parse_args()
 
+    if args.quickstart:
+        print_banner()
+        console.print("[bold green]Quick Start:[/]")
+        console.print("Run [cyan]artefact --list-tools[/] to see available tools. See [docs/usage.md](docs/usage.md) for more.")
+        return
     # Show banner and help if no subcommand is given
     if not hasattr(args, "func") and not args.version and not args.list_tools:
         print_banner()
