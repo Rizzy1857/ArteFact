@@ -6,8 +6,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from artefact import __version__
-from artefact.modules.hasher import hash_file, hash_directory
+from Artefact import __version__
+from Artefact.modules.hasher import hash_file, hash_directory
 
 console = Console(style="bold cyan", force_terminal=True)
 logger = logging.getLogger(__name__)
@@ -15,12 +15,12 @@ logger = logging.getLogger(__name__)
 # ---- Banner ----
 BANNER = f"""
 [bold magenta]
-           _____ _______ ______ ______      _____ _______ 
-     /\   |  __ \__   __|  ____|  ____/\   / ____|__   __|
-    /  \  | |__) | | |  | |__  | |__ /  \ | |       | |   
-   / /\ \ |  _  /  | |  |  __| |  __/ /\ \| |       | |   
-  / ____ \| | \ \  | |  | |____| | / ____ \ |____   | |   
- /_/    \_\_|  \_\ |_|  |______|_|/_/    \_\_____|  |_|   
+  @@@@@@  @@@@@@@  @@@@@@@ @@@@@@@@ @@@@@@@@  @@@@@@   @@@@@@@ @@@@@@@
+ @@!  @@@ @@!  @@@   @@!   @@!      @@!      @@!  @@@ !@@        @@!  
+ @!@!@!@! @!@!!@!    @!!   @!!!:!   @!!!:!   @!@!@!@! !@!        @!!  
+ !!:  !!! !!: :!!    !!:   !!:      !!:      !!:  !!! :!!        !!:  
+  :   : :  :   : :    :    : :: :::  :        :   : :  :: :: :    :   
+                                                                      
 [/bold magenta]
 [dim]v{__version__}[/dim]
 """
@@ -54,19 +54,19 @@ def hash_command(args: argparse.Namespace) -> None:
 
 
 def carving_command(args: argparse.Namespace) -> None:
-    from artefact.modules.carving import carve_files
+    from Artefact.modules.carving import carve_files
     carve_files(Path(args.input), Path(args.output), args.types)
 
 
 def metadata_command(args: argparse.Namespace) -> None:
-    from artefact.modules.metadata import extract_metadata
+    from Artefact.modules.metadata import extract_metadata
     extract_metadata(Path(args.file), args.deep)
 
 
 def timeline_command(args: argparse.Namespace) -> None:
     """Handle the timeline subcommand."""
-    from artefact.modules.timeline import extract_file_timestamps, timeline_to_json, timeline_to_markdown
-    from artefact.modules.timeline import TimelineEvent
+    from Artefact.modules.timeline import extract_file_timestamps, timeline_to_json, timeline_to_markdown
+    from Artefact.modules.timeline import TimelineEvent
     import glob
     try:
         from dateutil.parser import parse as dtparse
@@ -75,7 +75,7 @@ def timeline_command(args: argparse.Namespace) -> None:
     events = []
     for file_path in glob.glob(args.path, recursive=True):
         events.extend(extract_file_timestamps(file_path))
-        from artefact.modules.metadata import extract_metadata
+        from Artefact.modules.metadata import extract_metadata
         meta = extract_metadata(Path(file_path))
         for ts in meta.get('timestamps', []):
             try:

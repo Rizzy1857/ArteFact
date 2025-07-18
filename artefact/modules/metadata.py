@@ -4,7 +4,7 @@ from rich.console import Console
 import subprocess
 import json
 from datetime import datetime
-from artefact.error_handler import handle_error
+from Artefact.error_handler import handle_error
 
 console = Console()
 

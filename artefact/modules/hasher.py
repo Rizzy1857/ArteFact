@@ -3,7 +3,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Dict
-from artefact.error_handler import handle_error
+from Artefact.error_handler import handle_error
 
 SUPPORTED_ALGORITHMS = {
     "md5": hashlib.md5,

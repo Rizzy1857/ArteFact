@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from artefact.modules import carving
+from Artefact.modules import carving
 
 def test_carve_files_jpg(tmp_path):
     # Create a fake disk image with a JPG header/footer

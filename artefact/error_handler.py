@@ -7,7 +7,7 @@ from rich.console import Console
 import re
 
 console = Console()
-logger = logging.getLogger("artefact")
+logger = logging.getLogger("Artefact")
 
 class ArtefactError(Exception):
     """Base class for ArteFact errors."""

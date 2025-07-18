@@ -5,7 +5,7 @@ from dataclasses import dataclass, asdict
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import os
-from artefact.error_handler import handle_error
+from Artefact.error_handler import handle_error
 
 @dataclass
 class TimelineEvent:

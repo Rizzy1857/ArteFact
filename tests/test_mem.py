@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from artefact.modules import memory
+from Artefact.modules import memory
 import tempfile
 
 def test_extract_strings_ascii(tmp_path):

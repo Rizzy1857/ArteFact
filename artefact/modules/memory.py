@@ -7,7 +7,7 @@ Memory Dump Analysis Module for ArteFact v0.4.0
 import re
 from pathlib import Path
 from rich.console import Console
-from artefact.error_handler import handle_error
+from Artefact.error_handler import handle_error
 
 console = Console()
 

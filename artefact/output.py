@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.table import Table
 import json
 import subprocess
-from artefact.error_handler import handle_error
+from Artefact.error_handler import handle_error
 
 console = Console(style="bold cyan", force_terminal=True)
 

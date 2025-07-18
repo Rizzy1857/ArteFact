@@ -6,7 +6,7 @@ Disk Image Mounting and Volume Extraction for ArteFact
 import os
 from pathlib import Path
 from rich.console import Console
-from artefact.error_handler import handle_error
+from Artefact.error_handler import handle_error
 
 console = Console()
 

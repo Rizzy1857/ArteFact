@@ -1,6 +1,6 @@
 import os
 import tempfile
-from artefact.modules.timeline import extract_file_timestamps, timeline_to_json, timeline_to_markdown, TimelineEvent
+from Artefact.modules.timeline import extract_file_timestamps, timeline_to_json, timeline_to_markdown, TimelineEvent
 from datetime import datetime
 
 def test_extract_file_timestamps():

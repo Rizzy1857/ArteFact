@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from artefact.modules import hasher
+from Artefact.modules import hasher
 
 def test_hash_file(tmp_path):
     # Create a temporary file

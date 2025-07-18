@@ -6,7 +6,7 @@ Live Forensics / Volatile Data Capture for ArteFact
 import sys
 import platform
 from rich.console import Console
-from artefact.error_handler import handle_error
+from Artefact.error_handler import handle_error
 
 console = Console()
 

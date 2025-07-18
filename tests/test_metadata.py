@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from artefact.modules import metadata
+from Artefact.modules import metadata
 
 def test_extract_metadata_image(tmp_path):
     # Create a minimal PNG file
