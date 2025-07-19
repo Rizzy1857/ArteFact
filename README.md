@@ -48,7 +48,7 @@ artefact liveops --collect processes network
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+MPL 2.0 License. See [LICENSE](LICENSE).
 
 ## Contributing
 
