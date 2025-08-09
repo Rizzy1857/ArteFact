@@ -146,8 +146,6 @@ def list_tools():
     table.add_row("meta", "Extract metadata from images and PDFs")
     table.add_row("timeline", "Generate a forensics timeline from file timestamps")
     table.add_row("mem", "Analyze memory dumps (extract strings, IOCs, binaries)")
-    table.add_row("mount", "Mount and extract from disk images")
-    table.add_row("liveops", "Capture live system forensics (processes, ports, clipboard, services)")
     console.print(table)
 
 
@@ -159,8 +157,6 @@ def interactive_menu():
         console.print("[3] Hashing")
         console.print("[4] Timeline Generation")
         console.print("[5] Memory Analysis")
-        console.print("[6] Disk Image Mounting")
-        console.print("[7] Live Forensics")
         console.print("[0] Exit")
         choice = input("Select an option: ").strip()
         if choice == "1":
@@ -266,52 +262,11 @@ def interactive_menu():
                 output_dir_path = Path(output_dir)
                 output_dir_path.mkdir(parents=True, exist_ok=True)
                 carve_binaries(file_path, output_dir_path)
-        elif choice == "6":
-            img = input("Enter path to disk/image file: ").strip()
-            action = input("Action - [l]ist partitions, [e]xtract partition, or [q]uit? ").strip().lower()
-            if action == "l":
-                from artefact.modules.mount import list_partitions
-                list_partitions(img)
-            elif action == "e":
-                part = input("Enter partition address to extract (e.g. /dev/sda1): ").strip()
-                out = input("Enter output directory: ").strip()
-                from artefact.modules.mount import extract_partition
-                extract_partition(img, part, out)
-            elif action == "q":
-                continue
-            else:
-                console.print("[red]Invalid option. Please try again.")
-        elif choice == "7":
-            proc = input("List running processes? [y/N]: ").strip().lower() == "y"
-            conn = input("List open ports/connections? [y/N]: ").strip().lower() == "y"
-            clip = input("Dump clipboard contents? [y/N]: ").strip().lower() == "y"
-            serv = input("List running services (Windows only)? [y/N]: ").strip().lower() == "y"
-            from artefact.modules.liveops import list_processes, list_connections, get_clipboard, list_services
-            if proc:
-                list_processes()
-            if conn:
-                list_connections()
-            if clip:
-                get_clipboard()
-            if serv:
-                list_services()
-            if not (proc or conn or clip or serv):
-                print("[yellow]Specify at least one option: --processes, --connections, --clipboard, --services")
         elif choice == "0":
             console.print("[bold green]Goodbye!")
             break
         else:
             console.print("[red]Invalid option. Please try again.")
-
-
-def mount_command(args: argparse.Namespace) -> None:
-    from artefact.modules.mount import list_partitions, extract_partition
-    if args.list:
-        list_partitions(args.input)
-    elif args.extract and args.output:
-        extract_partition(args.input, args.extract, args.output)
-    else:
-        print("[yellow]Specify --list or --extract <partition_addr> -o <output_dir>")
 
 
 def main() -> None:
@@ -383,28 +338,6 @@ def main() -> None:
     memory_parser.add_argument('-b', '--binaries', action='store_true', help='Carve out binaries (PE, ELF, Mach-O)')
     memory_parser.add_argument('-o', '--output', help='Output directory for carved binaries')
     memory_parser.set_defaults(func=memory_command)
-    # Add disk image mounting subcommand
-    mount_parser = subparsers.add_parser(
-        'mount',
-        help='Mount and extract from disk images',
-        description="List partitions and extract files from disk images (.img, .dd, .E01)"
-    )
-    mount_parser.add_argument('-i', '--input', required=True, help='Input disk image file')
-    mount_parser.add_argument('--list', action='store_true', help='List partitions in the image')
-    mount_parser.add_argument('--extract', type=str, help='Partition address to extract')
-    mount_parser.add_argument('-o', '--output', help='Output directory for extraction')
-    mount_parser.set_defaults(func=mount_command)
-    # Add liveops subcommand
-    liveops_parser = subparsers.add_parser(
-        'liveops',
-        help='Capture live system forensics (processes, ports, clipboard, services)',
-        description="Live forensics: process list, open ports, clipboard, running services"
-    )
-    liveops_parser.add_argument('--processes', action='store_true', help='List running processes')
-    liveops_parser.add_argument('--connections', action='store_true', help='List open ports and network connections')
-    liveops_parser.add_argument('--clipboard', action='store_true', help='Dump clipboard contents')
-    liveops_parser.add_argument('--services', action='store_true', help='List running services (Windows only)')
-    liveops_parser.set_defaults(func=liveops_command)
     args = parser.parse_args()
 
     # If any subcommand or flag is given, run as normal
