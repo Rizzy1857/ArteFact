@@ -15,14 +15,14 @@ A modular command-line toolkit for digital forensics. Fast, extensible, and cros
 
 ## Quick Start
 
-- KickStart Guide: See [here](docs/kickstart.md)
-- Install: See [here](docs/installation.md)
-- Usage: See [here](docs/usage.md)
-- Features: See [here](docs/Roadmap.md)
-- Security: See [here](docs/SECURITY.md)
-- Threat Model: See [here](docs/threat_model.md)
-- Coverage: See [here](docs/coverage.md)
-- Code of Conduct: See [here](docs/CODE_OF_CONDUCT.md)
+- **KickStart Guide:** See [docs/kickstart.md](docs/kickstart.md)
+- Install: See [docs/installation.md](docs/installation.md)
+- Usage: See [docs/usage.md](docs/usage.md)
+- Features: See [docs/Roadmap.md](docs/Roadmap.md)
+- Security: See [docs/SECURITY.md](docs/SECURITY.md)
+- Threat Model: See [docs/threat_model.md](docs/threat_model.md)
+- Coverage: See [docs/coverage.md](docs/coverage.md)
+- Code of Conduct: See [docs/CODE_OF_CONDUCT.md](docs/CODE_OF_CONDUCT.md)
 
 ## Main Features
 
@@ -48,7 +48,7 @@ artefact liveops --collect processes network
 
 ## License
 
-MPL 2.0 License. See [LICENSE](LICENSE).
+MIT License. See [LICENSE](LICENSE).
 
 ## Contributing
 

@@ -1,23 +1,29 @@
 # Optional dependencies for ArteFact
 # These are not required for core functionality, but enable extra features.
 
-# Deep metadata extraction
-exiftool  # https://exiftool.org/ (system tool, not a Python package)
-
-# Advanced PDF and image handling (already in main requirements, but can be moved here if desired)
-# Pillow
-# PyPDF2
+# Note: The following system tools must be installed separately:
+# - ExifTool: Install via 'choco install exiftool' on Windows
+# - libewf: Required for E01 image support
+#   Windows: Use precompiled binaries
+#   Linux: sudo apt-get install libewf-dev
+#   macOS: brew install libewf
 
 # Memory analysis
-volatility3  # pip install volatility3
+volatility3>=2.4.0  # Memory forensics framework
 
 # Network analysis
-scapy  # pip install scapy
-tshark  # install via system package manager (e.g., choco install wireshark)
+scapy>=2.4.5        # Network packet manipulation
+python-magic>=0.4.0  # File type detection
 
-# Progress bars and file type detection
-python-magic  # pip install python-magic
-tqdm  # pip install tqdm
+# Progress and UI enhancements
+tqdm>=4.65.0        # Progress bars
+colorama>=0.4.4     # Cross-platform colored terminal text
 
-# E01 (Expert Witness) image support
-pyewf  # pip install pyewf
+# Additional forensic capabilities
+yara-python>=4.2.0  # Pattern matching engine
+py7zr>=0.20.0       # 7-zip archive handling
+python-registry>=1.3.0  # Windows registry parsing
+python-evtx>=0.7.4   # Windows Event Log parsing
+
+# Windows-specific dependencies
+python-magic-bin>=0.4.14; sys_platform == 'win32'  # Windows magic support

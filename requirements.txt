@@ -1,7 +1,20 @@
 # Core dependencies for ArteFact
-rich>=13.0.0
+rich>=10.0.0,<14.0.0
 argparse
-python-dateutil
-pytsk3
-Pillow
-PyPDF2
+python-dateutil>=2.8.0
+pytsk3>=20220219     # TSK bindings for disk forensics
+Pillow>=9.0.0        # Image handling
+PyPDF2>=3.0.0        # PDF analysis
+tabulate>=0.9.0      # Table formatting
+psutil>=5.9.0        # System resource monitoring
+
+# File format support
+python-docx>=0.8.11  # Microsoft Office documents
+mutagen>=1.46.0      # Audio/video metadata
+pefile>=2023.2.7     # Windows PE files
+pyelftools>=0.29     # ELF binary files
+
+# Data processing dependencies
+numpy>=1.21.0        # Numerical processing
+scikit-learn>=1.0.0  # Machine learning
+joblib>=1.1.0        # Parallel processing

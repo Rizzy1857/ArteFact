@@ -9,11 +9,13 @@ images, documents, and media files.
 import logging
 import subprocess
 import json
+import struct
 from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Optional, Any
+from datetime import datetime, timezone
+from typing import Dict, List, Optional, Any, Union, Tuple
 from rich.console import Console
 from rich.table import Table
+from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 
 from Artefact.error_handler import handle_error, ValidationError, with_error_handling
 
@@ -35,6 +37,34 @@ try:
 except ImportError:
     PYPDF2_AVAILABLE = False
     logger.debug("PyPDF2 not available - PDF metadata extraction limited")
+
+try:
+    from docx import Document as DocxDocument
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+    logger.debug("python-docx not available - DOCX metadata extraction limited")
+
+try:
+    import mutagen
+    MUTAGEN_AVAILABLE = True
+except ImportError:
+    MUTAGEN_AVAILABLE = False
+    logger.debug("mutagen not available - media metadata extraction limited")
+
+try:
+    import pefile
+    PEFILE_AVAILABLE = True
+except ImportError:
+    PEFILE_AVAILABLE = False
+    logger.debug("pefile not available - PE metadata extraction limited")
+
+try:
+    import elftools.elf.elffile as elftools
+    PYELFTOOLS_AVAILABLE = True
+except ImportError:
+    PYELFTOOLS_AVAILABLE = False
+    logger.debug("pyelftools not available - ELF metadata extraction limited")
 
 
 @with_error_handling("extract_metadata")
@@ -98,21 +128,38 @@ def extract_metadata(file_path: Path, deep: bool = False, include_exif: bool = T
     # Determine file type and extract accordingly
     file_ext = file_path.suffix.lower()
     
+    # First try magic number detection
+    magic_number = None
+    try:
+        with open(file_path, 'rb') as f:
+            magic_number = f.read(4)
+    except Exception:
+        pass
+    
     if deep:
         # Use exiftool for comprehensive extraction
         _extract_with_exiftool(file_path, result)
-    else:
-        # Use built-in extractors
-        if file_ext in ['.jpg', '.jpeg', '.png', '.tiff', '.bmp'] and include_exif:
-            _extract_image_metadata(file_path, result)
-        elif file_ext == '.pdf':
-            _extract_pdf_metadata(file_path, result)
-        elif file_ext in ['.doc', '.docx']:
-            _extract_document_metadata(file_path, result)
-        elif file_ext in ['.mp4', '.avi', '.mov', '.mp3', '.wav']:
-            _extract_media_metadata(file_path, result)
-        else:
-            logger.info(f"No specific metadata extractor for {file_ext} files")
+    
+    # Check binary formats first by magic numbers
+    if magic_number == b'MZ\x90\x00':
+        # PE file
+        _extract_pe_metadata(file_path, result)
+    elif magic_number == b'\x7fELF':
+        # ELF file
+        _extract_elf_metadata(file_path, result)
+    
+    # Then check by extension
+    if file_ext in ['.jpg', '.jpeg', '.png', '.tiff', '.bmp'] and include_exif:
+        _extract_image_metadata(file_path, result)
+    elif file_ext == '.pdf':
+        _extract_pdf_metadata(file_path, result)
+    elif file_ext in ['.doc', '.docx']:
+        _extract_document_metadata(file_path, result)
+    elif file_ext in ['.mp4', '.avi', '.mov', '.mp3', '.wav', '.ogg', '.flac', '.m4a', '.wma']:
+        _extract_media_metadata(file_path, result)
+    elif not (magic_number == b'MZ\x90\x00' or magic_number == b'\x7fELF'):
+        # Only log if we haven't already identified it as a binary
+        logger.info(f"No specific metadata extractor for {file_ext} files")
     
     return result
 
@@ -225,32 +272,151 @@ def _extract_pdf_metadata(file_path: Path, result: Dict[str, Any]):
 
 def _extract_document_metadata(file_path: Path, result: Dict[str, Any]):
     """Extract metadata from document files."""
-    try:
-        # For Office documents, we'd need additional libraries like python-docx
-        # For now, just record that it's a document
+    if not DOCX_AVAILABLE:
+        logger.warning("python-docx not available - limited document metadata extraction")
         result["metadata"]["document"] = {
             "type": "office_document",
             "extension": file_path.suffix
         }
-        logger.info(f"Document metadata extraction not fully implemented for {file_path.suffix}")
+        return
+        
+    try:
+        # Extract DOCX metadata
+        if file_path.suffix.lower() == '.docx':
+            doc = DocxDocument(file_path)
+            core_props = doc.core_properties
+            
+            doc_metadata = {
+                "title": core_props.title,
+                "author": core_props.author,
+                "company": core_props.company,
+                "category": core_props.category,
+                "comments": core_props.comments,
+                "content_status": core_props.content_status,
+                "subject": core_props.subject,
+                "version": core_props.version,
+                "language": core_props.language,
+                "keywords": core_props.keywords,
+                "last_modified_by": core_props.last_modified_by,
+                "last_printed": core_props.last_printed,
+                "revision": core_props.revision,
+                "document_statistics": {
+                    "paragraphs": len(doc.paragraphs),
+                    "sections": len(doc.sections),
+                    "tables": len(doc.tables)
+                }
+            }
+            
+            # Add timestamps
+            for field, value in [
+                ("created", core_props.created),
+                ("modified", core_props.modified),
+                ("last_printed", core_props.last_printed)
+            ]:
+                if value:
+                    try:
+                        if isinstance(value, str):
+                            dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
+                        else:
+                            dt = value.replace(tzinfo=timezone.utc)
+                            
+                        result["timestamps"].append({
+                            "label": f"Document {field}",
+                            "value": dt.isoformat(),
+                            "source": "docx_metadata"
+                        })
+                    except Exception as e:
+                        logger.debug(f"Failed to parse document timestamp {field}: {e}")
+            
+            result["metadata"]["document"] = doc_metadata
+            
+        else:
+            result["metadata"]["document"] = {
+                "type": "office_document",
+                "extension": file_path.suffix,
+                "note": "Metadata extraction not implemented for this format"
+            }
         
     except Exception as e:
         logger.warning(f"Failed to extract document metadata from {file_path}: {e}")
+        result["metadata"]["document"] = {
+            "type": "office_document",
+            "extension": file_path.suffix,
+            "error": str(e)
+        }
 
 
 def _extract_media_metadata(file_path: Path, result: Dict[str, Any]):
     """Extract metadata from media files."""
-    try:
-        # For media files, we'd typically use libraries like mutagen or ffprobe
-        # For now, just record that it's a media file
+    if not MUTAGEN_AVAILABLE:
+        logger.warning("mutagen not available - limited media metadata extraction")
         result["metadata"]["media"] = {
             "type": "media_file",
             "extension": file_path.suffix
         }
-        logger.info(f"Media metadata extraction not fully implemented for {file_path.suffix}")
+        return
+        
+    try:
+        # Load file with mutagen
+        media_file = mutagen.File(file_path)
+        
+        if media_file is None:
+            result["metadata"]["media"] = {
+                "type": "media_file",
+                "extension": file_path.suffix,
+                "note": "Unsupported media format"
+            }
+            return
+            
+        # Extract common metadata
+        media_metadata = {
+            "type": "media_file",
+            "extension": file_path.suffix,
+            "format": media_file.mime[0] if hasattr(media_file, 'mime') else None,
+            "length": media_file.info.length if hasattr(media_file.info, 'length') else None,
+            "bitrate": media_file.info.bitrate if hasattr(media_file.info, 'bitrate') else None,
+            "channels": media_file.info.channels if hasattr(media_file.info, 'channels') else None,
+            "sample_rate": media_file.info.sample_rate if hasattr(media_file.info, 'sample_rate') else None,
+            "bits_per_sample": media_file.info.bits_per_sample if hasattr(media_file.info, 'bits_per_sample') else None
+        }
+        
+        # Extract tags
+        if hasattr(media_file, 'tags'):
+            media_metadata["tags"] = {}
+            for key, value in media_file.tags.items():
+                # Clean up tag names
+                clean_key = key.lower().replace(':', '_').replace('/', '_')
+                if isinstance(value, (list, tuple)):
+                    value = value[0] if value else None
+                media_metadata["tags"][clean_key] = str(value)
+                
+                # Check for date/time tags
+                if any(date_field in clean_key.lower() for date_field in ['date', 'time', 'created', 'modified']):
+                    try:
+                        # Try common date formats
+                        for fmt in ['%Y-%m-%d', '%Y:%m:%d', '%Y-%m-%d %H:%M:%S', '%Y:%m:%d %H:%M:%S']:
+                            try:
+                                dt = datetime.strptime(str(value)[:19], fmt)
+                                result["timestamps"].append({
+                                    "label": f"Media {clean_key}",
+                                    "value": dt.isoformat(),
+                                    "source": "media_metadata"
+                                })
+                                break
+                            except ValueError:
+                                continue
+                    except Exception as e:
+                        logger.debug(f"Failed to parse media timestamp {clean_key}: {e}")
+        
+        result["metadata"]["media"] = media_metadata
         
     except Exception as e:
         logger.warning(f"Failed to extract media metadata from {file_path}: {e}")
+        result["metadata"]["media"] = {
+            "type": "media_file",
+            "extension": file_path.suffix,
+            "error": str(e)
+        }
 
 
 def _extract_with_exiftool(file_path: Path, result: Dict[str, Any]):
@@ -353,6 +519,151 @@ def display_metadata(metadata: Dict[str, Any], show_timestamps: bool = True):
                     meta_table.add_row(key, str_value)
                 
                 console.print(meta_table)
+
+
+def _extract_pe_metadata(file_path: Path, result: Dict[str, Any]):
+    """Extract metadata from PE files."""
+    if not PEFILE_AVAILABLE:
+        logger.warning("pefile not available - limited PE metadata extraction")
+        return
+    
+    try:
+        pe = pefile.PE(file_path)
+        
+        pe_metadata = {
+            "type": "pe_file",
+            "machine": pe.FILE_HEADER.Machine,
+            "timestamp": datetime.fromtimestamp(pe.FILE_HEADER.TimeDateStamp).isoformat(),
+            "subsystem": pe.OPTIONAL_HEADER.Subsystem,
+            "dll": pe.is_dll(),
+            "exe": pe.is_exe(),
+            "driver": pe.is_driver(),
+            "architecture": {
+                332: "PE32",
+                512: "PE32+",
+                267: "ROM"
+            }.get(pe.OPTIONAL_HEADER.Magic, "Unknown"),
+            "os_version": f"{pe.OPTIONAL_HEADER.MajorOperatingSystemVersion}.{pe.OPTIONAL_HEADER.MinorOperatingSystemVersion}",
+            "image_version": f"{pe.OPTIONAL_HEADER.MajorImageVersion}.{pe.OPTIONAL_HEADER.MinorImageVersion}",
+            "sections": []
+        }
+        
+        # Get sections
+        for section in pe.sections:
+            pe_metadata["sections"].append({
+                "name": section.Name.decode().rstrip('\x00'),
+                "size": section.SizeOfRawData,
+                "virtual_address": section.VirtualAddress,
+                "characteristics": hex(section.Characteristics)
+            })
+        
+        # Get imports
+        if hasattr(pe, 'DIRECTORY_ENTRY_IMPORT'):
+            pe_metadata["imports"] = []
+            for entry in pe.DIRECTORY_ENTRY_IMPORT:
+                dll_imports = {
+                    "dll": entry.dll.decode() if hasattr(entry, 'dll') else "unknown",
+                    "functions": []
+                }
+                if hasattr(entry, 'imports'):
+                    for imp in entry.imports[:100]:  # Limit to first 100
+                        if hasattr(imp, 'name') and imp.name:
+                            dll_imports["functions"].append(imp.name.decode())
+                pe_metadata["imports"].append(dll_imports)
+        
+        # Get exports
+        if hasattr(pe, 'DIRECTORY_ENTRY_EXPORT'):
+            pe_metadata["exports"] = []
+            if hasattr(pe.DIRECTORY_ENTRY_EXPORT, 'symbols'):
+                for exp in pe.DIRECTORY_ENTRY_EXPORT.symbols[:100]:  # Limit to first 100
+                    if hasattr(exp, 'name') and exp.name:
+                        pe_metadata["exports"].append(exp.name.decode())
+        
+        # Add timestamp
+        result["timestamps"].append({
+            "label": "PE Compiled",
+            "value": pe_metadata["timestamp"],
+            "source": "pe_metadata"
+        })
+        
+        result["metadata"]["pe"] = pe_metadata
+        pe.close()
+        
+    except Exception as e:
+        logger.warning(f"Failed to extract PE metadata from {file_path}: {e}")
+
+
+def _extract_elf_metadata(file_path: Path, result: Dict[str, Any]):
+    """Extract metadata from ELF files."""
+    if not PYELFTOOLS_AVAILABLE:
+        logger.warning("pyelftools not available - limited ELF metadata extraction")
+        return
+    
+    try:
+        with open(file_path, 'rb') as f:
+            elf = elftools.ELFFile(f)
+            
+            elf_metadata = {
+                "type": "elf_file",
+                "machine": elf.get_machine_arch(),
+                "elfclass": elf.elfclass,
+                "data": elf.little_endian and "little endian" or "big endian",
+                "type": elf.header['e_type'],
+                "entry_point": hex(elf.header['e_entry']),
+                "sections": [],
+                "segments": [],
+                "dynamic": {},
+                "symbols": []
+            }
+            
+            # Get sections
+            for section in elf.iter_sections():
+                sect_data = {
+                    "name": section.name,
+                    "type": section['sh_type'],
+                    "flags": section['sh_flags'],
+                    "size": section['sh_size']
+                }
+                elf_metadata["sections"].append(sect_data)
+            
+            # Get segments
+            for segment in elf.iter_segments():
+                seg_data = {
+                    "type": segment['p_type'],
+                    "flags": segment['p_flags'],
+                    "size": segment['p_filesz']
+                }
+                elf_metadata["segments"].append(seg_data)
+            
+            # Get dynamic entries
+            if elf.header['e_type'] == 'ET_DYN':
+                dynamic = elf.get_section_by_name('.dynamic')
+                if dynamic:
+                    for tag in dynamic.iter_tags():
+                        if tag.entry.d_tag == 'DT_NEEDED':
+                            elf_metadata["dynamic"].setdefault("needed", []).append(tag.needed)
+                        elif tag.entry.d_tag == 'DT_RPATH':
+                            elf_metadata["dynamic"]["rpath"] = tag.rpath
+                        elif tag.entry.d_tag == 'DT_RUNPATH':
+                            elf_metadata["dynamic"]["runpath"] = tag.runpath
+            
+            # Get symbols
+            symtab = elf.get_section_by_name('.symtab')
+            if symtab:
+                for sym in symtab.iter_symbols()[:100]:  # Limit to first 100
+                    if sym.name:
+                        sym_data = {
+                            "name": sym.name,
+                            "type": sym["st_info"]["type"],
+                            "bind": sym["st_info"]["bind"],
+                            "value": hex(sym["st_value"])
+                        }
+                        elf_metadata["symbols"].append(sym_data)
+            
+            result["metadata"]["elf"] = elf_metadata
+            
+    except Exception as e:
+        logger.warning(f"Failed to extract ELF metadata from {file_path}: {e}")
 
 
 def _format_file_size(size_bytes: int) -> str:

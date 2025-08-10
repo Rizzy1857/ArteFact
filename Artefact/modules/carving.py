@@ -3,75 +3,345 @@ File Carving Module
 ==================
 
 Recovers deleted or hidden files from disk images and raw data
-by searching for file signatures (magic bytes).
+by searching for file signatures (magic bytes) and using ML-based detection.
+
+Features:
+- Multiple file type support
+- ML-based file detection
+- Parallel processing
+- Resume capability
+- Progress tracking
 """
 
 import logging
+import os
+import json
+import pickle
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Set, Generator, Any
+
+import numpy as np
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
+from rich.table import Table
 
 from Artefact.error_handler import handle_error, ValidationError, with_error_handling
+from Artefact.core import get_logger
+
+# Configure logging
+console = Console()
+logger = get_logger(__name__)
+
+# Configure ML support
+ML_AVAILABLE = False
+try:
+    import numpy as np
+    from sklearn.ensemble import RandomForestClassifier
+    ML_AVAILABLE = True
+except ImportError:
+    logger.info("ML support not available. Install scikit-learn for enhanced detection.")
+    # Fallback to basic numpy for feature extraction
+    try:
+        import numpy as np
+    except ImportError:
+        logger.warning("numpy not available - ML features disabled")
+        np = None
+
+# Type aliases for clarity
+FilePath = Path
+Offset = int
+FileData = bytes
+FileType = str
+
+def _save_carved_file(
+    data: bytes,
+    file_type: str,
+    output_dir: Path,
+    file_counter: int,
+    offset: int
+) -> Optional[Path]:
+    """
+    Save carved file data to disk.
+    
+    Args:
+        data: Raw file data
+        file_type: Type of file being saved
+        output_dir: Directory to save file in
+        file_counter: Counter for unique naming
+        offset: Original file offset
+        
+    Returns:
+        Path to saved file or None if save failed
+    """
+    try:
+        # Generate unique filename
+        ext = FILE_SIGNATURES[file_type]['ext']
+        filename = f"carved_{file_counter:04d}_{offset}_{file_type}{ext}"
+        out_path = output_dir / filename
+        
+        # Save file
+        out_path.write_bytes(data)
+        logger.debug(f"Saved carved file: {out_path} ({len(data)} bytes)")
+        
+        return out_path
+    except Exception as e:
+        logger.warning(f"Failed to save carved file: {e}")
+        return None
+
+def _validate_carved_file(data: FileData, file_type: FileType) -> bool:
+    """
+    Validate carved file content.
+    
+    Args:
+        data: Raw file data
+        file_type: Type of file
+        
+    Returns:
+        True if file content appears valid
+    """
+    try:
+        if file_type in ['jpg', 'jpeg']:
+            return (data.startswith(b'\xff\xd8\xff') and 
+                   data.endswith(b'\xff\xd9'))
+            
+        elif file_type == 'png':
+            return (data.startswith(b'\x89PNG\r\n\x1a\n') and 
+                   data.endswith(b'IEND\xaeB`\x82'))
+            
+        elif file_type == 'pdf':
+            return (data.startswith(b'%PDF-') and 
+                   b'%%EOF' in data[-1024:])
+            
+        # Add more format-specific validation as needed
+        return True
+        
+    except Exception as e:
+        logger.debug(f"Validation failed for {file_type}: {e}")
+        return False
+
+def _predict_file_end(data: FileData, model: Any) -> int:
+    """
+    Use ML model to predict file end position.
+    
+    Args:
+        data: Raw file data
+        model: Trained ML model
+        
+    Returns:
+        Predicted end position
+    """
+    try:
+        features = _extract_features(data)
+        end_pos = model.predict([features])[0]
+        return min(len(data), int(end_pos))
+    except Exception as e:
+        logger.debug(f"ML prediction failed: {e}")
+        return len(data)
+
+def _extract_features(data: FileData) -> List[float]:
+    """
+    Extract features from byte data for ML prediction.
+    
+    Args:
+        data: Raw file data
+        
+    Returns:
+        List of numerical features or fallback features if numpy is not available
+    """
+    # Return fallback features if numpy not available
+    if not np:
+        return [len(data), 0, 0, 0, 0, 0, 0, 0]
+        
+    if len(data) == 0:
+        return [0] * 10
+        
+    try:
+        features = []
+        
+        # Basic statistical features
+        byte_array = np.frombuffer(data, dtype=np.uint8)
+        features.extend([
+            len(data),
+            float(np.mean(byte_array)),
+            float(np.std(byte_array)),
+            float(np.median(byte_array)),
+            float(np.max(byte_array)),
+            float(np.min(byte_array))
+        ])
+        
+        # Entropy calculation
+        hist = np.bincount(byte_array, minlength=256)
+        prob = hist / len(byte_array)
+        entropy = -float(np.sum(prob * np.log2(prob + 1e-10)))
+        features.append(entropy)
+        
+        # Compression ratio estimate
+        import zlib
+        compressed = len(zlib.compress(data))
+        features.append(compressed / len(data))
+        
+        return features
+    except Exception as e:
+        logger.debug(f"Feature extraction failed: {e}")
+        return [len(data), 0, 0, 0, 0, 0, 0, 0]  # Fallback features
+
+def _estimate_file_end(data: FileData, file_type: FileType) -> int:
+    """
+    Estimate file end position using heuristics.
+    
+    Args:
+        data: Raw file data
+        file_type: Type of file
+        
+    Returns:
+        Estimated end position
+    """
+    if file_type in ['jpg', 'jpeg']:
+        # Look for JPEG EOI marker
+        end = data.find(b'\xff\xd9')
+        if end != -1:
+            return end + 2
+            
+    elif file_type == 'png':
+        # Look for PNG IEND chunk
+        end = data.find(b'IEND\xaeB`\x82')
+        if end != -1:
+            return end + 8
+            
+    elif file_type == 'pdf':
+        # Look for PDF EOF marker
+        end = data.rfind(b'%%EOF')
+        if end != -1:
+            return end + 5
+            
+    elif file_type == 'bmp':
+        # Try to get size from BMP header
+        try:
+            if len(data) >= 6:
+                size = int.from_bytes(data[2:6], byteorder='little')
+                if size > 0:
+                    return min(size, len(data))
+        except Exception:
+            pass
+            
+    # Default: scan for next known header
+    for sig in FILE_SIGNATURES.values():
+        header = sig['header']
+        pos = data.find(header, 1)  # Start after current header
+        if pos != -1:
+            return pos
+            
+    return len(data)
+
+# Optional ML support
+try:
+    import sklearn
+    from sklearn.ensemble import RandomForestClassifier
+    ML_AVAILABLE = True
+except ImportError:
+    ML_AVAILABLE = False
+
+@dataclass
+class CarvingState:
+    """State tracking for resumable carving."""
+    image_path: Path
+    output_dir: Path
+    processed_bytes: int
+    found_files: Set[Path]
+    last_position: int
+    
+    def save(self, path: Path) -> None:
+        """Save carving state to file."""
+        data = {
+            'image_path': str(self.image_path),
+            'output_dir': str(self.output_dir),
+            'processed_bytes': self.processed_bytes,
+            'found_files': [str(p) for p in self.found_files],
+            'last_position': self.last_position
+        }
+        path.write_text(json.dumps(data, indent=2))
+    
+    @classmethod
+    def load(cls, path: Path) -> 'CarvingState':
+        """Load carving state from file."""
+        data = json.loads(path.read_text())
+        return cls(
+            image_path=Path(data['image_path']),
+            output_dir=Path(data['output_dir']),
+            processed_bytes=data['processed_bytes'],
+            found_files=set(Path(p) for p in data['found_files']),
+            last_position=data['last_position']
+        )
 
 console = Console()
 logger = logging.getLogger(__name__)
 
-# File signatures for common types (magic bytes)
-FILE_SIGNATURES = {
+# File format signatures for magic number-based detection
+FILE_SIGNATURES: Dict[str, Dict[str, Any]] = {
     'jpg': {
         'header': b'\xff\xd8\xff',
         'footer': b'\xff\xd9',
         'ext': '.jpg',
-        'description': 'JPEG Image'
+        'description': 'JPEG Image',
+        'max_size': 100 * 1024 * 1024  # 100MB
     },
     'jpeg': {
         'header': b'\xff\xd8\xff',
         'footer': b'\xff\xd9',
         'ext': '.jpeg',
-        'description': 'JPEG Image'
+        'description': 'JPEG Image',
+        'max_size': 100 * 1024 * 1024  # 100MB
     },
     'png': {
         'header': b'\x89PNG\r\n\x1a\n',
         'footer': b'IEND\xaeB`\x82',
         'ext': '.png',
-        'description': 'PNG Image'
+        'description': 'PNG Image',
+        'max_size': 50 * 1024 * 1024  # 50MB
     },
     'pdf': {
         'header': b'%PDF-',
         'footer': b'%%EOF',
         'ext': '.pdf',
-        'description': 'PDF Document'
+        'description': 'PDF Document',
+        'max_size': 100 * 1024 * 1024  # 100MB
     },
     'zip': {
         'header': b'PK\x03\x04',
         'footer': b'PK\x05\x06',
         'ext': '.zip',
-        'description': 'ZIP Archive'
+        'description': 'ZIP Archive',
+        'max_size': 1024 * 1024 * 1024  # 1GB
     },
     'gif': {
         'header': b'GIF8',
         'footer': b'\x00;',
         'ext': '.gif',
-        'description': 'GIF Image'
+        'description': 'GIF Image',
+        'max_size': 50 * 1024 * 1024  # 50MB
     },
     'bmp': {
         'header': b'BM',
-        'footer': None,  # BMP doesn't have a specific footer
+        'footer': None,  
         'ext': '.bmp',
-        'description': 'Windows Bitmap'
+        'description': 'Windows Bitmap',
+        'max_size': 100 * 1024 * 1024  # 100MB
     },
     'exe': {
         'header': b'MZ',
         'footer': None,
         'ext': '.exe',
-        'description': 'Windows Executable'
+        'description': 'Windows Executable',
+        'max_size': 1024 * 1024 * 1024  # 1GB
     },
     'doc': {
         'header': b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1',
         'footer': None,
         'ext': '.doc',
-        'description': 'Microsoft Word Document'
+        'description': 'Microsoft Word Document',
+        'max_size': 100 * 1024 * 1024  # 100MB
     }
 }
 
@@ -82,7 +352,12 @@ def carve_files(
     output_dir: Path, 
     types: Optional[List[str]] = None,
     chunk_size: int = 1024 * 1024,  # 1MB chunks
-    max_file_size: int = 50 * 1024 * 1024  # 50MB max per carved file
+    max_file_size: int = 50 * 1024 * 1024,  # 50MB max per carved file
+    parallel: bool = True,
+    max_workers: Optional[int] = None,
+    recover_fragmented: bool = False,
+    use_ml: bool = False,
+    resume_file: Optional[Path] = None
 ) -> List[Path]:
     """
     Recover files from a disk image by searching for file signatures.
@@ -117,6 +392,38 @@ def carve_files(
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    # Load ML model if requested
+    ml_model = None
+    if use_ml and ML_AVAILABLE:
+        model_path = Path(__file__).parent / 'models' / 'file_type_classifier.pkl'
+        if model_path.exists():
+            with model_path.open('rb') as f:
+                ml_model = pickle.load(f)
+        else:
+            logger.warning("ML model not found, falling back to signature-based detection")
+    
+    # Resume from previous state if requested
+    state = None
+    if resume_file and resume_file.exists():
+        try:
+            state = CarvingState.load(resume_file)
+            if (state.image_path != image_path or 
+                state.output_dir != output_dir):
+                logger.warning("Resume state mismatch, starting fresh")
+                state = None
+        except Exception as e:
+            logger.warning(f"Failed to load resume state: {e}")
+    
+    # Initialize new state if needed
+    if not state:
+        state = CarvingState(
+            image_path=image_path,
+            output_dir=output_dir,
+            processed_bytes=0,
+            found_files=set(),
+            last_position=0
+        )
+    
     # Determine which types to carve
     if types is None:
         types_to_carve = list(FILE_SIGNATURES.keys())
@@ -134,6 +441,43 @@ def carve_files(
     console.print(f"[green]Carving file types:[/] {', '.join(types_to_carve)}")
     console.print(f"[green]Output directory:[/] {output_dir}")
     
+    def carve_chunk(chunk_data: bytes, offset: int) -> List[Tuple[bytes, str, int]]:
+        """Process a single chunk of data."""
+        results = []
+        for file_type in types_to_carve:
+            sig = FILE_SIGNATURES[file_type]
+            header = sig['header']
+            footer = sig.get('footer')
+            
+            # Find all header positions in chunk
+            pos = 0
+            while True:
+                pos = chunk_data.find(header, pos)
+                if pos == -1:
+                    break
+                    
+                # Extract potential file
+                start = pos
+                if footer:
+                    end = chunk_data.find(footer, start + len(header))
+                    if end == -1:
+                        pos += 1
+                        continue
+                    end += len(footer)
+                else:
+                    # Use ML or heuristics to determine end
+                    if ml_model and use_ml:
+                        end = _predict_file_end(chunk_data[start:], ml_model)
+                    else:
+                        end = _estimate_file_end(chunk_data[start:], file_type)
+                
+                if end > start:
+                    file_data = chunk_data[start:end]
+                    if len(file_data) <= max_file_size:
+                        results.append((file_data, file_type, offset + start))
+                pos += 1
+        return results
+    
     carved_files = []
     image_size = image_path.stat().st_size
     
@@ -149,34 +493,72 @@ def carve_files(
         task = progress.add_task("Carving files...", total=image_size)
         
         with image_path.open('rb') as f:
-            buffer = b''
-            bytes_processed = 0
-            file_counter = 1
+            if state.last_position > 0:
+                f.seek(state.last_position)
+            
+            file_counter = len(state.found_files) + 1
+            overlap_size = max_file_size  # Size of overlap between chunks
             
             while True:
                 chunk = f.read(chunk_size)
                 if not chunk:
                     break
                 
-                buffer += chunk
-                bytes_processed += len(chunk)
-                progress.update(task, completed=bytes_processed)
+                current_pos = f.tell()
                 
-                # Process each file type
-                for file_type in types_to_carve:
-                    carved = _carve_file_type(
-                        buffer, 
-                        file_type, 
-                        output_dir, 
-                        file_counter,
-                        max_file_size
-                    )
-                    carved_files.extend(carved)
-                    file_counter += len(carved)
+                # Process chunk
+                if parallel and chunk_size > 1024*1024:  # Only parallelize large chunks
+                    # Split chunk into sub-chunks for parallel processing
+                    sub_chunks = []
+                    sub_size = chunk_size // (max_workers or os.cpu_count() or 4)
+                    
+                    for i in range(0, len(chunk), sub_size):
+                        sub_chunk = chunk[i:i + sub_size + overlap_size]
+                        if sub_chunk:
+                            sub_chunks.append((sub_chunk, current_pos + i))
+                    
+                    # Process sub-chunks in parallel
+                    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+                        futures = [
+                            executor.submit(carve_chunk, sub_chunk, offset)
+                            for sub_chunk, offset in sub_chunks
+                        ]
+                        
+                        for future in as_completed(futures):
+                            try:
+                                for file_data, file_type, offset in future.result():
+                                    if _validate_carved_file(file_data, file_type):
+                                        out_path = _save_carved_file(
+                                            file_data, file_type, output_dir,
+                                            file_counter, offset
+                                        )
+                                        if out_path:
+                                            carved_files.append(out_path)
+                                            state.found_files.add(out_path)
+                                            file_counter += 1
+                            except Exception as e:
+                                logger.error(f"Parallel carving error: {e}")
+                else:
+                    # Sequential processing
+                    for file_data, file_type, offset in carve_chunk(chunk, current_pos):
+                        if _validate_carved_file(file_data, file_type):
+                            out_path = _save_carved_file(
+                                file_data, file_type, output_dir,
+                                file_counter, offset
+                            )
+                            if out_path:
+                                carved_files.append(out_path)
+                                state.found_files.add(out_path)
+                                file_counter += 1
                 
-                # Keep only the last part of buffer to catch files spanning chunks
-                if len(buffer) > chunk_size * 2:
-                    buffer = buffer[-chunk_size:]
+                # Update progress and state
+                state.processed_bytes += len(chunk)
+                state.last_position = current_pos
+                progress.update(task, completed=state.processed_bytes)
+                
+                # Save state periodically
+                if resume_file and state.processed_bytes % (100 * 1024 * 1024) == 0:  # Every 100MB
+                    state.save(resume_file)
     
     console.print(f"[bold green]Carving complete![/] Found {len(carved_files)} files")
     

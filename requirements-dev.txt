@@ -1,5 +1,27 @@
 # Dev/test dependencies for ArteFact
-pytest
-flake8
-pytest-cov
-pip-audit
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-xdist>=3.0.0    # Parallel test execution
+pytest-mock>=3.10.0    # Mocking support
+pytest-timeout>=2.1.0  # Test timeouts
+
+# Code quality
+flake8>=6.0.0
+black>=23.0.0
+isort>=5.12.0
+mypy>=1.4.0
+bandit>=1.7.5
+
+# Documentation
+sphinx>=6.0.0
+sphinx-rtd-theme>=1.2.0
+sphinx-autodoc-typehints>=1.23.0
+
+# Security and dependency management
+pip-audit>=2.5.0
+safety>=2.3.0
+
+# Development tools
+ipython>=8.0.0
+ipdb>=0.13.0
+pre-commit>=3.3.0
