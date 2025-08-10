@@ -31,8 +31,6 @@ A modular command-line toolkit for digital forensics. Fast, extensible, and cros
 - Metadata extraction (images, PDFs, deep via exiftool)
 - Timeline generation
 - Memory analysis
-- Disk image mounting
-- LiveOps (live system collection)
 
 ## Example CLI Usage
 
@@ -41,9 +39,8 @@ artefact hash test/text.txt --algorithm md5
 artefact carve -i disk.img -o output --types jpg
 artefact meta -f sample.jpg --deep
 artefact timeline "C:\Users\HRISHI\Documents\*" --format markdown
-artefact mount -i disk.img --list
 artefact memory -i memdump.raw --strings
-artefact liveops --collect processes network
+
 ```
 
 ## License
