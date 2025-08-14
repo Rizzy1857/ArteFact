@@ -25,6 +25,9 @@ def test_hash_file_nonexistent():
 
 def test_hash_directory_basic(temp_dir):
     """Test basic directory hashing."""
+    # Create a file in the directory to ensure it's not empty
+    test_file = temp_dir / "test.txt"
+    test_file.write_text("Test content")
     results = hash_directory(temp_dir, "sha256")
     assert isinstance(results, dict)
     assert len(results) > 0

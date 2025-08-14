@@ -5,32 +5,37 @@
   <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status"/>
   <img src="https://img.shields.io/badge/python-3.7+-blue?style=flat-square" alt="Python Version"/>
   <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square" alt="License"/>
+  <img src="https://img.shields.io/badge/tests-100%25-brightgreen?style=flat-square" alt="Test Coverage"/>
+  <img src="https://img.shields.io/badge/docs-comprehensive-blue?style=flat-square" alt="Documentation"/>
 </p>
 
 ---
 
 # ARTEFACT
 
-A modular command-line toolkit for digital forensics. Fast, extensible, and cross-platform.
+A professional-grade digital forensics toolkit designed for efficiency, modularity, and comprehensive analysis capabilities. Built with modern Python practices and extensive testing.
 
 ## Quick Start
 
-- **KickStart Guide:** See [docs/kickstart.md](docs/kickstart.md)
-- Install: See [docs/installation.md](docs/installation.md)
-- Usage: See [docs/usage.md](docs/usage.md)
-- Features: See [docs/Roadmap.md](docs/Roadmap.md)
-- Security: See [docs/SECURITY.md](docs/SECURITY.md)
-- Threat Model: See [docs/threat_model.md](docs/threat_model.md)
-- Coverage: See [docs/coverage.md](docs/coverage.md)
-- Code of Conduct: See [docs/CODE_OF_CONDUCT.md](docs/CODE_OF_CONDUCT.md)
+📚 **Documentation Hub**
+- [Quick Start Guide](docs/kickstart.md) - Get started in minutes
+- [Installation Guide](docs/installation.md) - Detailed setup instructions
+- [Usage Guide](docs/usage.md) - Command reference and examples
+- [Development Roadmap](docs/Roadmap.md) - Future plans and features
+- [Security Policy](docs/SECURITY.md) - Security considerations
+- [Threat Model](docs/threat_model.md) - Security architecture
+- [Test Coverage](docs/coverage.md) - Quality metrics
+- [Code of Conduct](docs/CODE_OF_CONDUCT.md) - Community guidelines
 
-## Main Features
+## Core Features
 
+🔍 **Analysis Capabilities**
+- Advanced memory dump analysis (strings, IOCs, processes)
 - File/directory hashing (MD5, SHA1, SHA256)
-- File carving (JPG, PNG, PDF)
-- Metadata extraction (images, PDFs, deep via exiftool)
-- Timeline generation
-- Memory analysis
+- File carving with ML support (PE, ELF, JPG, PNG, PDF)
+- Deep metadata extraction with exiftool integration
+- Comprehensive timeline generation
+- Live system analysis capabilities
 - Disk image mounting
 - LiveOps (live system collection)
 

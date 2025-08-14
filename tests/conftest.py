@@ -110,7 +110,7 @@ def sample_files(temp_dir: Path) -> Dict[str, Path]:
     files['binary'].write_bytes(bytes(range(256)))
     files['large'].write_bytes(b"A" * (1024 * 1024))  # 1MB
     files['empty'].touch()
-    files['unicode'].write_text("Unicode test: αβγδε 中文 � العربية")
+    files['unicode'].write_text("Unicode test: αβγδε 中文 � العربية", encoding="utf-8")
     
     # Create mock image/document files
     files['image'].write_bytes(b'\xff\xd8\xff\xe0' + b'MOCK JPEG' + b'\xff\xd9')

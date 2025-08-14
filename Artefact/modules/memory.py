@@ -208,7 +208,7 @@ def extract_iocs(
     # Default IOC patterns
     patterns = {
         'ipv4': r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b',
-        'ipv6': r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b',
+        'ipv6': r'(?:^|(?<=\s))(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:)*:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){6}:[0-9a-fA-F]{0,4}|(?:[0-9a-fA-F]{1,4}:){5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?::[0-9a-fA-F]{1,4}){1,6}|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}(?:%[0-9a-zA-Z]+)?|::(?:ffff(?::0{1,4})?:)?(?:[0-9]{1,3}\.){3}[0-9]{1,3}|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?:$|(?=\s))',
         'domain': r'\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b',
         'url': r'(?:https?://|ftp://|file://|hxxps?://|fxp://)\S+',
         'email': r'\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b',
@@ -444,12 +444,11 @@ def carve_files(
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         TimeElapsedColumn()
     ) as progress:
-        task = progress.add_task("Carving files", total=dump_size)
+        task_id = progress.add_task("Carving files", total=dump_size)
         
         with dump_path.open('rb') as f:
             for chunk in _chunk_reader(f):
-                task.advance(len(chunk))
-                
+                progress.advance(task_id, len(chunk))
                 for file_type, sig in signatures.items():
                     header = sig['header']
                     footer = sig['footer']
@@ -498,14 +497,19 @@ def _validate_pe(data: bytes) -> bool:
         if not data.startswith(b'MZ'):
             return False
             
-        # Get PE header offset
-        pe_offset = int.from_bytes(data[0x3c:0x40], byteorder='little')
-        if pe_offset > len(data):
+        # Check for DOS stub and PE header
+        if len(data) < 0x40:  # Need at least this much for MZ + e_lfanew
+            return False
+            
+        # Get PE header offset from e_lfanew
+        pe_offset = int.from_bytes(data[0x3c:0x40], byteorder='little', signed=False)
+        if pe_offset < 0x40 or pe_offset > len(data) - 4:  # Need space for PE\0\0
             return False
             
         # Check PE signature
         return data[pe_offset:pe_offset+4] == b'PE\0\0'
-    except Exception:
+    except Exception as e:
+        logger.debug(f"PE validation failed: {str(e)}")
         return False
 
 def _validate_elf(data: bytes) -> bool:
@@ -735,6 +739,31 @@ if __name__ == "__main__":
 
 def _run_volatility_plugin(context: Any, plugin_name: str, config_path: str) -> Any:
     """Run a Volatility plugin and return results."""
+
+@with_error_handling("carve_binaries")
+def carve_binaries(
+    dump_path: Path,
+    output_dir: Path,
+    types: Optional[List[str]] = None,
+    min_size: int = 64,  # Lower minimum size for test binary files
+    max_size: int = 100 * 1024 * 1024
+) -> List[Path]:
+    """
+    Carve binary files (PE, ELF, etc.) from a memory dump.
+    Args:
+        dump_path: Path to memory dump
+        output_dir: Directory to save carved binaries
+        types: List of binary types to carve (e.g., ["pe", "elf"])
+        min_size: Minimum file size (default: 64 bytes to allow test files)
+        max_size: Maximum file size
+    Returns:
+        List of paths to carved binaries
+    """
+    # Reuse carve_files logic, but restrict to binary types
+    binary_types = ["pe", "elf"]
+    if types:
+        binary_types = [t for t in types if t in binary_types]
+    return carve_files(dump_path, output_dir, file_types=binary_types, min_size=min_size, max_size=max_size)
     try:
         # Configure plugin
         plugin = plugins.construct_plugin(context, [config_path, plugin_name])
