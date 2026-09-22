@@ -51,3 +51,24 @@ def test_carve_binaries(tmp_path):
     memory.carve_binaries(file, outdir, types=["pe"])
     files = list(outdir.glob("*.exe"))
     assert len(files) >= 1
+
+
+def test_volatility_helper_parses_renderer_output(monkeypatch):
+    class Plugin:
+        def run(self):
+            return "grid"
+
+    class Plugins:
+        @staticmethod
+        def construct_plugin(context, path):
+            return Plugin()
+
+    class Renderer:
+        def render(self, grid):
+            assert grid == "grid"
+            return '[{"PID": 4}]'
+
+    monkeypatch.setattr(memory, "VOLATILITY_AVAILABLE", True)
+    monkeypatch.setattr(memory, "plugins", Plugins())
+    monkeypatch.setattr(memory, "JsonRenderer", Renderer)
+    assert memory._run_volatility_plugin(object(), "test", "plugins") == [{"PID": 4}]

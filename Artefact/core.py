@@ -9,13 +9,14 @@ import json
 import time
 import shutil
 import threading
+import copy
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 from datetime import datetime
 
 # Version and metadata
-__version__ = "0.4.0"
-__codename__ = "Cold Open"
+__version__ = "1.0.0"
+__codename__ = "Final Evidence"
 
 # Configuration version for compatibility
 CONFIG_VERSION = "1.0.0"
@@ -60,7 +61,7 @@ class ArtefactConfig:
     
     def __init__(self, config_dict: Optional[Dict[str, Any]] = None):
         """Initialize configuration with optional custom settings."""
-        self._config = DEFAULT_CONFIG.copy()
+        self._config = copy.deepcopy(DEFAULT_CONFIG)
         self._load_env_vars()
         if config_dict:
             self._update_config(config_dict)
@@ -132,8 +133,13 @@ class ArtefactConfig:
             
     def _setup_monitoring(self):
         """Setup resource monitoring."""
-        import psutil
-        import threading
+        try:
+            import psutil
+        except ImportError:
+            logging.getLogger('Artefact').debug(
+                "psutil is not installed; resource monitoring is disabled"
+            )
+            return
         
         def monitor_resources():
             while True:
@@ -163,12 +169,13 @@ class ArtefactConfig:
     def save_config(self, path: Optional[Path] = None) -> None:
         """Save current configuration to JSON file."""
         if path is None:
-            path = Path(self._config['paths']['config_dir']) / 'config.json'
+            config_dir = self._config['paths']['config_dir']
+            path = Path(config_dir) / 'config.json' if config_dir else Path.cwd() / 'config.json'
             
         path.parent.mkdir(parents=True, exist_ok=True)
         
         # Create backup if file exists
-        if path.exists() and self._config['security']['backup_config']:
+        if path.exists() and self._config['security'].get('backup_config', True):
             backup_dir = Path(self._config['paths']['backup_dir'])
             backup_dir.mkdir(parents=True, exist_ok=True)
             backup_path = backup_dir / f"config_{int(time.time())}.json"
@@ -330,6 +337,9 @@ class ProgressTracker:
     
     def update(self, increment: int = 1) -> None:
         """Update progress by increment."""
+        if self.total <= 0:
+            self.current = 0
+            return
         self.current = min(self.current + increment, self.total)
         if self.current % max(1, self.total // 10) == 0 or self.current == self.total:
             percentage = (self.current / self.total) * 100

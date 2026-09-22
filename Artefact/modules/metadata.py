@@ -32,11 +32,15 @@ except ImportError:
     logger.debug("PIL not available - image metadata extraction limited")
 
 try:
-    import PyPDF2
+    import pypdf as PyPDF2
     PYPDF2_AVAILABLE = True
 except ImportError:
-    PYPDF2_AVAILABLE = False
-    logger.debug("PyPDF2 not available - PDF metadata extraction limited")
+    try:
+        import PyPDF2
+        PYPDF2_AVAILABLE = True
+    except ImportError:
+        PYPDF2_AVAILABLE = False
+        logger.debug("pypdf not available - PDF metadata extraction limited")
 
 try:
     from docx import Document as DocxDocument
@@ -97,6 +101,7 @@ def extract_metadata(file_path: Path, deep: bool = False, include_exif: bool = T
     result = {
         "file_path": str(file_path),
         "file_size": file_path.stat().st_size,
+        "format": file_path.suffix.lower().lstrip('.') or "unknown",
         "timestamps": [],
         "metadata": {},
         "extractor": "artefact"

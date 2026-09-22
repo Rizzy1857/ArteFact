@@ -12,6 +12,8 @@ Available modules:
 - memory: Memory dump analysis
 - liveops: Live system analysis
 - mount: Disk image mounting and extraction
+- network: PCAP parsing, sessions, IOCs, and traffic analysis
+- disk_forensics: filesystem, deleted-file, registry, and snapshot analysis
 """
 
 # Make commonly used classes and functions available at package level
@@ -22,5 +24,7 @@ __all__ = [
     'timeline',
     'memory',
     'liveops',
-    'mount'
+    'mount',
+    'network',
+    'disk_forensics'
 ]

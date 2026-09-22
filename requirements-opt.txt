@@ -10,6 +10,7 @@
 
 # Memory analysis
 volatility3>=2.4.0  # Memory forensics framework
+psutil>=5.9.0
 
 # Network analysis
 scapy>=2.4.5        # Network packet manipulation
@@ -27,3 +28,21 @@ python-evtx>=0.7.4   # Windows Event Log parsing
 
 # Windows-specific dependencies
 python-magic-bin>=0.4.14; sys_platform == 'win32'  # Windows magic support
+
+# File and disk analysis
+pytsk3>=20220219
+tabulate>=0.9
+Pillow>=9.0
+pypdf>=4.0
+python-docx>=0.8.11
+mutagen>=1.46
+pefile>=2023.2.7
+pyelftools>=0.29
+
+# Optional ML carving
+numpy>=1.23
+scikit-learn>=1.2
+joblib>=1.2
+
+# Optional desktop interface
+PySide6>=6.5

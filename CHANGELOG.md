@@ -1,6 +1,29 @@
 # ARTEFACT Changelog
 
-## [v0.4.0b] - Unreleased
+## [v1.0.0] - 2026-09-22
+
+### Added
+
+- Native PCAP parsing, sessions, HTTP object recovery, IOC extraction, traffic summaries, timelines, and threat-feed correlation.
+- Plugin API 2.0 with manifests, dependency checks, HTTPS marketplace support, archive and entrypoint integrity verification.
+- Case files, evidence hashing and reverification, chain-of-custody records, findings, and IOC correlation.
+- Markdown, HTML, JSON, and PDF reports with safe templates and timeline visualization.
+- Advanced disk inventory, deleted-file recovery, AFF/E01 conversion paths, Registry hive analysis, and shadow-copy discovery.
+- Optional Qt desktop interface, dependency health diagnostics, persistent hash caching, security tests, and performance benchmarks.
+
+### Changed
+
+- Core installation now has only two portable dependencies; native and heavyweight capabilities are optional feature groups.
+- CLI, documentation, CI, and packaging metadata now describe the same supported interface.
+- Minimum supported Python version is 3.9.
+
+### Fixed
+
+- Restored the command entry point and missing live, mount, and interactive modules.
+- Corrected timeline CSV generation, optional import failures, configuration copying/backups, metadata format reporting, and Volatility execution.
+- Repaired the system test harness so it exercises documented path-based APIs.
+
+## [v0.4.0b] - 2025-08-14 (superseded by 1.0.0)
 
 > *"Centralized Error Handling & Refactor"*
 

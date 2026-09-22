@@ -1,22 +1,14 @@
-# Test Coverage
+# Test and coverage gates
 
-ArteFact uses `pytest` and `pytest-cov` to ensure all core modules and features are covered by automated tests. Coverage reports are generated on every CI run and can be viewed locally.
-
-## How to Check Coverage Locally
+The release suite contains unit, integration, system, security, and opt-in performance tests.
 
 ```powershell
-pytest --cov=artefact --cov-report=term --cov-report=html
+python -m pytest --run-system --performance
+python -m pytest --cov=Artefact --cov-report=term --cov-report=html
+python benchmarks/benchmark_core.py
 ```
 
-- The HTML report will be available in the `htmlcov/` directory.
-- Aim for 90%+ coverage on all business logic and plugin loading code.
+System tests exercise CLI subprocesses and complete workflows. Security tests exercise plugin archive traversal, untrusted report content, and filename handling. Performance tests enforce minimum streaming throughput and bounded memory-string extraction time.
 
-## Coverage Badge
-
-Add a Codecov badge to the README after the first successful upload.
-
----
-
-See the [README](../README.md) for a quick project overview.
-See the [Usage Guide](./usage.md) for detailed CLI examples.
-See the [Installation Guide](./installation.md) for setup instructions.
+CI runs the full suite on Windows and Linux with the oldest and newest supported Python versions.
+The release gate requires at least 50% aggregate line coverage; security-sensitive new modules are individually tested above that baseline.

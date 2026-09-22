@@ -36,13 +36,20 @@ from Artefact.error_handler import handle_error, ValidationError, with_error_han
 # Required third-party libraries
 try:
     import pytsk3
+except ImportError:
+    pytsk3 = None
+try:
     import pyewf
+except ImportError:
+    pyewf = None
+try:
     import pyvhdi
+except ImportError:
+    pyvhdi = None
+try:
     from tabulate import tabulate
-except ImportError as e:
-    missing_lib = str(e).split("'")[1]
-    print(f"Warning: {missing_lib} not installed. Some features may be limited.")
-    print(f"Install with: pip install {missing_lib}")
+except ImportError:
+    tabulate = None
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -167,6 +174,26 @@ def convert_image(
             
         except Exception as e:
             raise RuntimeError(f"VHD conversion failed: {str(e)}")
+
+    # Advanced Forensics Format. affcat streams raw bytes to stdout.
+    elif format == '.aff':
+        affcat = shutil.which('affcat')
+        if not affcat:
+            raise ValidationError("AFF conversion requires AFFLIB's affcat executable")
+        try:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with output_path.open('wb') as raw_file:
+                process = subprocess.run(
+                    [affcat, str(input_path)], stdout=raw_file,
+                    stderr=subprocess.PIPE, check=False
+                )
+            if process.returncode != 0:
+                output_path.unlink(missing_ok=True)
+                message = process.stderr.decode('utf-8', errors='replace').strip()
+                raise RuntimeError(message or "affcat failed")
+            return True
+        except OSError as e:
+            raise RuntimeError(f"AFF conversion failed: {str(e)}")
             
     else:
         raise ValidationError(f"Unsupported image format: {format}")
@@ -196,6 +223,8 @@ def open_image(image_path: Union[str, Path]) -> ImageInfo:
     image_format = image_path.suffix.lower()
     if image_format not in IMAGE_FORMATS:
         raise ValidationError(f"Unsupported image format: {image_format}")
+    if pytsk3 is None:
+        raise ValidationError("Disk image access requires pytsk3. Install the 'disk' extra")
         
     # Convert non-raw formats if needed
     if IMAGE_FORMATS[image_format]['handler'] != 'raw':
@@ -329,7 +358,7 @@ def analyze_partitions(image_path: Union[str, Path]) -> List[PartitionInfo]:
     
     return partitions
 
-def _detect_fs_type(img: pytsk3.Img_Info, offset: int) -> Optional[str]:
+def _detect_fs_type(img: Any, offset: int) -> Optional[str]:
     """Detect filesystem type at given offset."""
     try:
         fs = pytsk3.FS_Info(img, offset=offset)

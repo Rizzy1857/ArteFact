@@ -24,8 +24,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple, Any, BinaryIO, Generator
 
-import yara
-import psutil
+try:
+    import yara
+except ImportError:
+    yara = None
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 from rich.table import Table
@@ -739,6 +746,22 @@ if __name__ == "__main__":
 
 def _run_volatility_plugin(context: Any, plugin_name: str, config_path: str) -> Any:
     """Run a Volatility plugin and return results."""
+    if not VOLATILITY_AVAILABLE:
+        return None
+    try:
+        plugin = plugins.construct_plugin(context, [config_path, plugin_name])
+        grid = plugin.run()
+        renderer = JsonRenderer()
+        output = renderer.render(grid)
+        if output is None:
+            logger.warning("Volatility JSON renderer returned no data for %s", plugin_name)
+            return None
+        if isinstance(output, bytes):
+            output = output.decode("utf-8")
+        return json.loads(output) if isinstance(output, str) else output
+    except Exception as e:
+        logger.warning(f"Volatility plugin {plugin_name} failed: {e}")
+        return None
 
 @with_error_handling("carve_binaries")
 def carve_binaries(
@@ -764,19 +787,3 @@ def carve_binaries(
     if types:
         binary_types = [t for t in types if t in binary_types]
     return carve_files(dump_path, output_dir, file_types=binary_types, min_size=min_size, max_size=max_size)
-    try:
-        # Configure plugin
-        plugin = plugins.construct_plugin(context, [config_path, plugin_name])
-        
-        # Create TreeGrid
-        grid = plugin.run()
-        
-        # Convert TreeGrid to JSON
-        renderer = JsonRenderer()
-        output = renderer.render(grid)
-        
-        # Parse and return results
-        return json.loads(output)
-    except Exception as e:
-        logger.warning(f"Volatility plugin {plugin_name} failed: {e}")
-        return None

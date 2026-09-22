@@ -1,49 +1,37 @@
-name: CI (rust-carving branch)
-permissions:
-  contents: read
-  statuses: write
-  security-events: write
+name: CI
+
 on:
   push:
-    branches: [ rust-carving ]
   pull_request:
-    branches: [ rust-carving ]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    runs-on: windows-latest
+  test:
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.12]
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9", "3.13"]
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install maturin
-        run: pip install maturin
-      - name: Build and install Rust extension
-        run: |
-          cd rustcarver
-          maturin develop
-          cd ..
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
-      - name: Lint with flake8
-        run: |
-          flake8 artefact tests
-      - name: Run tests with coverage
-        run: |
-          pip install pytest-cov
-          pytest --cov=artefact --cov-report=xml --cov-report=term
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[test]"
+      - run: python -m pytest --run-system --performance --cov=Artefact --cov-report=term --cov-report=xml --cov-fail-under=50
+      - run: python -m compileall -q Artefact tests
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-      - name: Security audit with pip-audit
-        run: |
-          pip install pip-audit
-          pip-audit
+          python-version: "3.13"
+      - run: python -m pip install -e ".[test]" pip-audit
+      - run: python -m pytest tests/security
+      - run: python -m pip_audit

@@ -1,28 +1,28 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "Artefact"
-version = "0.4.0"
-description = "A comprehensive forensic analysis toolkit with dark-mode aesthetics."
+version = "1.0.0"
+description = "A modular, case-oriented digital forensics toolkit."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
     { name = "Rizzy1857", email = "Rizzy1857@gmail.com" }
 ]
-keywords = ["forensics", "CLI", "hashing", "toolkit", "rich", "digital-forensics", "carving", "metadata", "timeline"]
+keywords = ["forensics", "CLI", "hashing", "digital-forensics", "carving", "metadata", "timeline", "pcap"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Security",
@@ -30,10 +30,18 @@ classifiers = [
     "Topic :: Utilities"
 ]
 dependencies = [
-    "rich>=13.0.0",
-    "python-dateutil"
+    "rich>=13.0,<15.0",
+    "python-dateutil>=2.8,<3.0"
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+analysis = ["Pillow>=9,<12", "pypdf>=4,<6", "python-docx>=0.8.11,<2", "mutagen>=1.46,<2", "pefile>=2023.2.7", "pyelftools>=0.29"]
+disk = ["pytsk3>=20220219", "python-registry>=1.3,<2", "tabulate>=0.9,<1"]
+memory = ["psutil>=5.9,<8", "volatility3>=2.4,<3", "yara-python>=4.2,<5"]
+ml = ["numpy>=1.23,<3", "scikit-learn>=1.2,<2", "joblib>=1.2,<2"]
+gui = ["PySide6>=6.5,<7"]
+test = ["pytest>=7,<9", "pytest-cov>=4,<7"]
 
 [project.urls]
 Homepage = "https://github.com/Rizzy1857/ArteFact"
@@ -42,7 +50,7 @@ Source = "https://github.com/Rizzy1857/ArteFact"
 Tracker = "https://github.com/Rizzy1857/ArteFact/issues"
 
 [project.scripts]
-Artefact = "Artefact.cli:main"
+artefact = "Artefact.cli:main"
 
 [tool.pytest.ini_options]
 minversion = "6.0"

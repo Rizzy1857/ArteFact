@@ -6,11 +6,11 @@ A professional-grade digital forensics toolkit with dark-mode aesthetics
 and comprehensive analysis capabilities.
 
 Author: Rizzy1857
-Version: 0.4.0 "Cold Open"
+Version: 1.0.0 "Final Evidence"
 """
 
-__version__ = "0.4.0"
-__codename__ = "Cold Open"
+__version__ = "1.0.0"
+__codename__ = "Final Evidence"
 __author__ = "Rizzy1857"
 __email__ = "Rizzy1857@gmail.com"
 

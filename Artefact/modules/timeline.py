@@ -8,6 +8,8 @@ for temporal analysis of digital evidence.
 
 import os
 import json
+import csv
+import io
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -251,19 +253,17 @@ def timeline_to_csv(events: List[TimelineEvent]) -> str:
     Returns:
         CSV string
     """
-    lines = ["Timestamp,Event Type,Source,Details"]
-    
+    output = io.StringIO(newline="")
+    writer = csv.writer(output, lineterminator="\n")
+    writer.writerow(["Timestamp", "Event Type", "Source", "Details"])
     for event in sorted(events, key=lambda x: x.timestamp):
-        timestamp_str = event.timestamp.isoformat()
-        
-        # Escape quotes and commas
-        source = f'"{str(event.source).replace('"', '""')}"'
-        event_type = f'"{event.event_type.replace('"', '""')}"'
-        details = f'"{str(event.details).replace('"', '""')}"' if event.details else '""'
-        
-        lines.append(f"{timestamp_str},{event_type},{source},{details}")
-    
-    return "\n".join(lines)
+        writer.writerow([
+            event.timestamp.isoformat(),
+            event.event_type,
+            str(event.source),
+            str(event.details) if event.details else "",
+        ])
+    return output.getvalue().rstrip("\n")
 
 
 def display_timeline(
@@ -531,12 +531,13 @@ def detect_anomalies(
     windows = defaultdict(int)
     window_events = defaultdict(list)
     
+    window_seconds = window_size.total_seconds()
+    if window_seconds <= 0:
+        raise ValueError("window_size must be positive")
     for event in sorted_events:
-        window_start = event.timestamp.replace(
-            minute=event.timestamp.minute - (event.timestamp.minute % window_size.seconds//60),
-            second=0,
-            microsecond=0
-        )
+        epoch = datetime(1970, 1, 1, tzinfo=event.timestamp.tzinfo)
+        elapsed = (event.timestamp - epoch).total_seconds()
+        window_start = epoch + timedelta(seconds=(elapsed // window_seconds) * window_seconds)
         windows[window_start] += 1
         window_events[window_start].append(event)
     

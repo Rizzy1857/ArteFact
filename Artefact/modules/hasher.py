@@ -9,6 +9,7 @@ using various algorithms (MD5, SHA1, SHA256, SHA512).
 import hashlib
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Dict, Optional, List
 from rich.console import Console
@@ -247,6 +248,30 @@ def verify_hash(file_path: Path, expected_hash: str, algorithm: str = "sha256") 
     except Exception as e:
         logger.error(f"Hash verification failed for {file_path}: {str(e)}")
         return False
+
+
+def hash_file_cached(file_path: Path, algorithm: str = "sha256",
+                     cache_path: Optional[Path] = None) -> str:
+    """Hash a file using a metadata-keyed persistent JSON cache."""
+    file_path = Path(file_path).resolve()
+    stat = file_path.stat()
+    cache_path = Path(cache_path or (Path.cwd() / ".artefact-hash-cache.json"))
+    key = f"{file_path}|{stat.st_size}|{stat.st_mtime_ns}|{algorithm.lower()}"
+    cache = {}
+    if cache_path.is_file():
+        try:
+            cache = json.loads(cache_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            cache = {}
+    if key in cache:
+        return cache[key]
+    digest = hash_file(file_path, algorithm)
+    cache[key] = digest
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = cache_path.with_suffix(cache_path.suffix + ".tmp")
+    temporary.write_text(json.dumps(cache, indent=2), encoding="utf-8")
+    os.replace(temporary, cache_path)
+    return digest
 
 
 if __name__ == "__main__":

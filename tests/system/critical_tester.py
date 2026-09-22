@@ -3,6 +3,7 @@ Critical testing module for comprehensive system testing
 """
 
 import time
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Any
 from dataclasses import dataclass
@@ -115,15 +116,21 @@ class CriticalTester:
     def _test_memory(self) -> None:
         """Test memory analysis functionality."""
         from Artefact.modules.memory import analyze_memory_dump
-        # Mock memory dump for testing
-        test_data = bytes(range(256))
-        results = analyze_memory_dump(test_data)
-        assert 'patterns' in results, "Missing pattern analysis"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dump_path = Path(temp_dir) / "sample.raw"
+            test_data = bytes(range(256))
+            dump_path.write_bytes(test_data)
+            result = analyze_memory_dump(dump_path)
+            assert result.size == len(test_data), "Incorrect memory dump size"
+            assert result.path == dump_path, "Incorrect memory dump path"
     
     def _test_carving(self) -> None:
         """Test file carving functionality."""
         from Artefact.modules.carving import carve_files
-        # Mock disk image for testing
-        test_data = bytes(range(1024))
-        carved = carve_files(test_data)
-        assert len(carved) >= 0, "File carving failed"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            image_path = root / "sample.img"
+            output_dir = root / "carved"
+            image_path.write_bytes(b"prefix\xff\xd8\xfftest\xff\xd9suffix")
+            carved = carve_files(image_path, output_dir, types=["jpg"], parallel=False)
+            assert len(carved) == 1, "File carving failed"

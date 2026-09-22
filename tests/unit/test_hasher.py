@@ -3,7 +3,7 @@ Unit tests for the hasher module
 """
 import pytest
 from pathlib import Path
-from Artefact.modules.hasher import hash_file, hash_directory, SUPPORTED_ALGORITHMS
+from Artefact.modules.hasher import hash_file, hash_directory, hash_file_cached, SUPPORTED_ALGORITHMS
 
 def test_hash_file_basic(sample_files):
     """Test basic file hashing functionality."""
@@ -41,3 +41,13 @@ def test_hash_directory_recursive(temp_dir):
     
     results = hash_directory(temp_dir, "sha256", recursive=True)
     assert any("subdir" in path for path in results.keys())
+
+
+def test_hash_file_cached_invalidates_on_change(tmp_path):
+    source = tmp_path / "source.bin"
+    cache = tmp_path / "cache.json"
+    source.write_bytes(b"first")
+    first = hash_file_cached(source, cache_path=cache)
+    assert hash_file_cached(source, cache_path=cache) == first
+    source.write_bytes(b"second value")
+    assert hash_file_cached(source, cache_path=cache) != first

@@ -71,10 +71,11 @@ graph TD
 - API abuse
 
 **Mitigations:**
-- Plugin sandboxing
-- Dependency scanning
-- Version pinning
-- API rate limiting
+- HTTPS-only marketplace transport
+- Archive and entrypoint SHA-256 verification
+- Safe archive extraction and size limits
+- API-version and dependency checks
+- Explicit warning that plugins are trusted in-process code
 
 ### 4. Data Security
 
@@ -229,7 +230,7 @@ def process_file(file_path: Path) -> None:
 ## Future Improvements
 
 1. Enhanced Security
-   - Plugin signing
+   - Publisher signatures and isolated plugin workers
    - Memory encryption
    - Network isolation
    - Container support
